@@ -293,56 +293,87 @@ public class Parser {
       }
       break;
 
-    case Token.BEGIN:
+    // case Token.BEGIN:
+    //   acceptIt();
+    //   commandAST = parseCommand();
+    //   accept(Token.END);
+    //   break;
+
+    // case Token.IF:
+    //   {
+    //     acceptIt();
+    //     Expression eAST = parseExpression();
+    //     accept(Token.THEN);
+    //     Command c1AST = parseSingleCommand();
+    //     accept(Token.ELSE);
+    //     Command c2AST = parseSingleCommand();
+    //     finish(commandPos);
+    //     commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);
+    //   }
+    //   break;
+
+    case Token.IF:
+    {
       acceptIt();
-      commandAST = parseCommand();
+      Expression eAST = parseExpression();
+      accept(Token.THEN);
+      Command c1AST = parseCommand();
+      Command c2AST = parseVerticalBarCommand();
       accept(Token.END);
-      break;
+      finish(commandPos);
+      commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);
+    }
+
+    // case Token.LET:
+    //   {
+    //     acceptIt();
+    //     Declaration dAST = parseDeclaration();
+    //     accept(Token.IN);
+    //     Command cAST = parseSingleCommand();
+    //     finish(commandPos);
+    //     commandAST = new LetCommand(dAST, cAST, commandPos);
+    //   }
+    //   break;
 
     case Token.LET:
-      {
+    {
         acceptIt();
         Declaration dAST = parseDeclaration();
         accept(Token.IN);
-        Command cAST = parseSingleCommand();
+        Command cAST = parseCommand();
+        accept(Token.END);  
         finish(commandPos);
         commandAST = new LetCommand(dAST, cAST, commandPos);
-      }
-      break;
+    }
+    break;
 
-    case Token.IF:
-      {
-        acceptIt();
-        Expression eAST = parseExpression();
-        accept(Token.THEN);
-        Command c1AST = parseSingleCommand();
-        accept(Token.ELSE);
-        Command c2AST = parseSingleCommand();
-        finish(commandPos);
-        commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);
-      }
-      break;
 
-    case Token.WHILE:
-      {
-        acceptIt();
-        Expression eAST = parseExpression();
-        accept(Token.DO);
-        Command cAST = parseSingleCommand();
-        finish(commandPos);
-        commandAST = new WhileCommand(eAST, cAST, commandPos);
-      }
-      break;
+    // case Token.WHILE:
+    //   {
+    //     acceptIt();
+    //     Expression eAST = parseExpression();
+    //     accept(Token.DO);
+    //     Command cAST = parseSingleCommand();
+    //     finish(commandPos);
+    //     commandAST = new WhileCommand(eAST, cAST, commandPos);
+    //   }
+    //   break;
 
     case Token.SEMICOLON:
     case Token.END:
     case Token.ELSE:
     case Token.IN:
-    case Token.EOT:
-
-      finish(commandPos);
-      commandAST = new EmptyCommand(commandPos);
-      break;
+    case Token.SKIP:
+    {
+        acceptIt();
+        finish(commandPos);
+        commandAST = new EmptyCommand(commandPos);
+    }
+    break;
+    // case Token.EOT:
+    //   finish(commandPos);
+    //   commandAST = new EmptyCommand(commandPos);
+    //   break;
 
     default:
       syntacticError("\"%\" cannot start a command",
@@ -354,11 +385,59 @@ public class Parser {
     return commandAST;
   }
 
+///////////////////////////////////////////////////
+//
+// Expresion | y else
+//
+////////////////////////////////////////////////////
+
+Command parseVerticalBarCommand() throws SyntaxError {        //MODIFICADO
+    Command commandAST = null; // in case there's a syntactic error
+
+    SourcePosition commandPos = new SourcePosition();
+    start(commandPos);
+    switch (currentToken.kind) {
+
+    case Token.VERTICAL_BAR:
+      {
+        acceptIt();
+        Expression eAST = parseExpression();
+        accept(Token.THEN);
+        Command c1AST = parseCommand();
+        finish(commandPos);
+        commandAST = new IfCommand(eAST, c1AST, parseVerticalBarCommand(), commandPos);
+      }
+      break;
+
+    case Token.ELSE:
+      {
+        acceptIt();
+        Command c1AST = parseCommand();
+        finish(commandPos);
+        commandAST = c1AST;
+      }
+      break;
+
+    default:
+        syntacticError("\"%\" cannot start a command",
+        currentToken.spelling);
+      break;
+    }
+    return commandAST;
+  }
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // EXPRESSIONS
 //
 ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
 
   Expression parseExpression() throws SyntaxError {
     Expression expressionAST = null; // in case there's a syntactic error
