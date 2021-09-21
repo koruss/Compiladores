@@ -347,6 +347,98 @@ public class Parser {
     }
     break;
 
+    case Token.SELECT: // falta de agregar el cases
+    {
+      acceptIt();
+      Expression eAST = parseExpression();
+      accept(Token.FROM);
+
+    }
+    
+    case Token.REPEAT:      //MODIFICADO
+      {
+        acceptIt();
+        switch (currentToken.kind) {
+            case Token.WHILE:
+            {
+                acceptIt();
+                Expression eAST = parseExpression();
+                accept(Token.DO);
+                Command cAST = parseCommand();
+                accept(Token.END);
+                finish(commandPos);
+                commandAST = new WhileCommand(eAST, cAST, commandPos);
+            }
+            break;
+            
+            case Token.UNTIL:
+            {
+                acceptIt();
+                Expression eAST = parseExpression();
+                accept(Token.DO);
+                Command cAST = parseCommand();
+                accept(Token.END);
+                finish(commandPos);
+                commandAST = new UntilCommand(eAST, cAST, commandPos);
+            }
+            break;
+            
+            case Token.DO:
+            {
+                acceptIt();
+                Command cAST = parseCommand();
+                switch (currentToken.kind) {
+                    case Token.WHILE:
+                    {
+                        acceptIt();
+                        Expression eAST = parseExpression();
+                        accept(Token.END);
+                        finish(commandPos);
+                        commandAST = new doWhileCommand(cAST, eAST, commandPos);
+                    }
+                    break;
+                    case Token.UNTIL:
+                    {
+                        acceptIt();
+                        Expression eAST = parseExpression();
+                        accept(Token.END);
+                        finish(commandPos);
+                        commandAST = new doUntilCommand(cAST, eAST, commandPos);
+                    }
+                    break;
+                }
+            }
+            break;
+            
+            case Token.FOR:
+            {
+              acceptIt();
+              Identifier iASTV = parseIdentifier();
+              switch (currentToken.kind){
+                case Token.BECOMES:
+                {
+                  acceptIt();
+                  accept(Token.RANGE);
+                  Expression eAST = parseExpression();
+                  accept(Token.DOUBLE_DOT);
+                  Expression eAST = parseExpression();
+                  //estamos en el for 
+
+                }
+                break;
+                case Token.IN:
+                {
+
+                }
+                break;
+              }
+
+            }
+            break;
+        }
+      }
+      break;
+
 
     // case Token.WHILE:
     //   {

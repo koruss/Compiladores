@@ -133,7 +133,7 @@ final class Token extends Object {
     "if",
     "in",
     "let",
-    "local"
+    "local",
     "of",
     "proc",
     "record",
