@@ -5,16 +5,24 @@
  */
 package Triangle.AbstractSyntaxTrees;
 
+import Triangle.SyntacticAnalyzer.SourcePosition;
+
 /**
  *
  * @author Andres
  */
-public class InVarDecl {
-    public Identifier I;
-    public Expression E;
-    
-    public InVarDecl(Identifier _ident, Expression _exp){
-        I = _ident;
-        E = _exp;
-    }
+public class InVarDecl extends AST {
+
+	public Identifier I;
+	public Expression E;
+
+	public InVarDecl(Identifier _ident, Expression _exp, SourcePosition thisPosition) {
+		super(thisPosition);
+		I = _ident;
+		E = _exp;
+	}
+
+	public Object visit(Visitor v, Object o) {
+		return v.visitInVarDecl(this, o);
+	}
 }
