@@ -23,6 +23,7 @@ import Triangle.AbstractSyntaxTrees.AssignCommand;
 import Triangle.AbstractSyntaxTrees.BinaryExpression;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
+import Triangle.AbstractSyntaxTrees.CaseLiteral;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
 import Triangle.AbstractSyntaxTrees.Command;
@@ -238,6 +239,27 @@ public class Parser {
 			syntacticError("operator expected here", "");
 		}
 		return O;
+	}
+
+	Object parseCaseLiteral() throws SyntaxError {
+		CaseLiteral CaL = null;
+		IntegerLiteral IL = null;
+		CharacterLiteral CL = null;
+		switch (currentToken.kind) {
+			case Token.INTLITERAL: {
+				IL = parseIntegerLiteral();
+				CaL = new CaseLiteral(IL);
+				return CaL;
+			}
+			case Token.CHARLITERAL: {
+				CL = parseCharacterLiteral();
+				CaL = new CaseLiteral(CL);
+				return CaL;
+			}
+			default:
+				syntacticError("case literal expected here", "");
+				return CaL;
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////

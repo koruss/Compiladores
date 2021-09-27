@@ -14,6 +14,7 @@ import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
+import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
@@ -256,6 +257,16 @@ public class TreeVisitor implements Visitor {
 	}
 	// </editor-fold>
 
+
+	// <editor-fold defaultstate="collapsed" desc=" Cases ">
+	// Cases
+	public Object visitCase(Case ast, Object o){
+		return (createUnary("Case", ast.C));
+		//Temporal hasta que arreglemos las visitas a CaseLiteral.
+	}
+
+	// </editor-fold>
+	
 	// <editor-fold defaultstate="collapsed" desc=" Aggregates ">
 	// Array Aggregates
 	public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object obj) {

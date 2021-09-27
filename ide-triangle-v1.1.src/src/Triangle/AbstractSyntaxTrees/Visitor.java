@@ -91,6 +91,9 @@ public interface Visitor {
 	public abstract Object visitVarExpDeclaration(VarExpDeclaration ast, Object o);
 
 	public abstract Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o);
+	
+	// Cases
+	public abstract Object visitCase(Case ast, Object o);
 
 	// Array Aggregates
 	public abstract Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object o);

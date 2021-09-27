@@ -25,6 +25,7 @@ import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
+import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
@@ -253,6 +254,14 @@ public class LayoutVisitor implements Visitor {
 
 		return layoutBinary("MultProcDecl", ast.D1, ast.D2);
 	}
+
+	// <editor-fold defaultstate="collapsed" desc=" Cases ">
+	// Cases
+	public Object visitCase(Case ast, Object o){
+		return layoutUnary("Case", ast.C);
+	}
+
+	// </editor-fold>
 
 	// Array Aggregates
 	public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object obj) {

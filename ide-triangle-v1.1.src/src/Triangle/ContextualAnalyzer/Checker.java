@@ -24,6 +24,7 @@ import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
+import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
@@ -418,6 +419,14 @@ public final class Checker implements Visitor {
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
 		return (null);
 	}
+
+	// <editor-fold defaultstate="collapsed" desc=" Cases ">
+	// Cases
+	public Object visitCase(Case ast, Object o){
+		return (null);
+	}
+
+	// </editor-fold>
 
 	// Array Aggregates
 	// Returns the TypeDenoter for the Array Aggregate. Does not use the

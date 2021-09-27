@@ -128,6 +128,7 @@ final class Token extends Object {
 		"local",
 		"of",
 		"proc",
+		"range",
 		"record",
 		"recursive",
 		"repeat",
