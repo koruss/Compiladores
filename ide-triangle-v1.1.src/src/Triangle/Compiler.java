@@ -76,7 +76,7 @@ public class Compiler {
 
 		scanner = new Scanner(source, sourceName);
 		reporter = new ErrorReporter();
-		parser = new Parser(scanner, reporter);
+		parser = new Parser(scanner, reporter, sourceName);
 		checker = new Checker(reporter);
 		encoder = new Encoder(reporter);
 		drawer = new Drawer();

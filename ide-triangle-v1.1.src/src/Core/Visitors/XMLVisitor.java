@@ -1,9 +1,8 @@
-/*
- * IDE-Triangle v1.0
- * TableDetails.java
- */
 package Core.Visitors;
 
+import Triangle.AbstractSyntaxTrees.Visitor;
+import java.io.FileWriter;
+import java.io.IOException;
 import Triangle.AbstractSyntaxTrees.AnyTypeDenoter;
 import Triangle.AbstractSyntaxTrees.ArrayExpression;
 import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
@@ -79,134 +78,217 @@ import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
-import Triangle.CodeGenerator.Field;
-import Triangle.CodeGenerator.KnownAddress;
-import Triangle.CodeGenerator.KnownRoutine;
-import Triangle.CodeGenerator.KnownValue;
-import Triangle.CodeGenerator.TypeRepresentation;
-import Triangle.CodeGenerator.UnknownAddress;
-import Triangle.CodeGenerator.UnknownRoutine;
-import Triangle.CodeGenerator.UnknownValue;
-import javax.swing.table.DefaultTableModel;
-
 /**
- * Implements the Triangle Visitor interface, which is used to visit an entire
- * AST.
  *
- * Generates a DefaultTableModel, used to draw a Jable.
- *
- * @author Luis Leopoldo Pérez <luiperpe@ns.isi.ulatina.ac.cr>
+ * @author Andres
  */
-public class TableVisitor implements Visitor {
+public class XMLVisitor implements Visitor{
+	
+	public String fileName, fileBuffer;
+	public int indentationLevel = 0;
 
-	/**
-	 * Creates a new instance of TableDetails
-	 */
-	public TableVisitor() {
+	public static String xmlOpener = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+	public XMLVisitor(){
+		fileBuffer = xmlOpener;
 	}
 
+	public XMLVisitor(String _fname){
+		// Get the absolute filename without the ".tri", and change it to ".xml".
+		fileName = (_fname.substring(0, _fname.length() - 4)) + ".xml";
+		// Add the metadata and head elements to the html buffer.
+		fileBuffer = xmlOpener;
+	}
+
+	public void writeFile(Program programAST) {
+		try {
+			// Write the file.
+			programAST.visit(this, null);
+			FileWriter xmlFile = new FileWriter(fileName);
+			xmlFile.write(fileBuffer);
+			xmlFile.close();
+			// Clear the buffer.
+			fileBuffer = "";
+		} catch (IOException e) {
+			System.err.println("ERROR: An error has occurred while creating the XML document file.");
+			e.printStackTrace();
+		}
+	}
+
+	public String getIndentation(){
+		String msg = "";
+		for(int i = 0; i<indentationLevel;i++)
+			msg += "\t";	
+
+		return msg;
+	}
+
+	public void writeToBuffer(String tag, String separator, Boolean isIndent){
+		if(isIndent)
+			fileBuffer += getIndentation() + tag + separator;
+		else
+			fileBuffer +=  tag + separator;
+	}
+
+
+	//Visitor methods.
 	// <editor-fold defaultstate="collapsed" desc=" Commands ">
 	// Commands
 	public Object visitAssignCommand(AssignCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<AssignCommand>", "\n", true);
 		ast.V.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</AssignCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitCallCommand(CallCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<CallCommand>", "\n", true);
 		ast.I.visit(this, null);
 		ast.APS.visit(this, null);
+		writeToBuffer("</CallCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitEmptyCommand(EmptyCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<EmptyCommand/>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitIfCommand(IfCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<IfCommand>", "\n", true);
 		ast.E.visit(this, null);
 		ast.C1.visit(this, null);
 		ast.C2.visit(this, null);
+		writeToBuffer("</IfCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitLetCommand(LetCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<LetCommand>", "\n", true);
 		ast.D.visit(this, null);
 		ast.C.visit(this, null);
+		writeToBuffer("</LetCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSequentialCommand(SequentialCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SequentialCommand>", "\n", true);
 		ast.C1.visit(this, null);
 		ast.C2.visit(this, null);
+		writeToBuffer("</SequentialCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitWhileCommand(WhileCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<WhileCommand>", "\n", true);
 		ast.E.visit(this, null);
 		ast.C.visit(this, null);
+		writeToBuffer("</WhileCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitUntilCommand(UntilCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<UntilCommand>", "\n", true);
 		ast.E.visit(this, null);
 		ast.C.visit(this, null);
+		writeToBuffer("</UntilCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<DoWhileCommand>", "\n", true);
 		ast.E.visit(this, null);
 		ast.C.visit(this, null);
+		writeToBuffer("</DoWhileCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitDoUntilCommand(DoUntilCommand ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<DoUntilCommand>", "\n", true);
 		ast.E.visit(this, null);
 		ast.C.visit(this, null);
+		writeToBuffer("</DoUntilCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object o){
+		indentationLevel++;
+		writeToBuffer("<RepeatForRangeCommand>", "\n", true);
 		ast.E.visit(this, null);
 		ast.C.visit(this, null);
-		ast.rangeVar.visit(null, null);
+		ast.rangeVar.visit(this, null);
+		writeToBuffer("</RepeatForRangeCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 		
 	}
 
 	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object o){
+		indentationLevel++;
+		writeToBuffer("<RepeatForRangeWhileCommand>", "\n", true);
 		ast.C.visit(this, null);
 		ast.E1.visit(this, null);
 		ast.E2.visit(this, null);
-		ast.rangeVar.visit(null, null);
+		ast.rangeVar.visit(this, null);
+		writeToBuffer("</RepeatForRangeWhileCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 		
 	}
 
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object o){
+		indentationLevel++;
+		writeToBuffer("<RepeatForRangeUntilCommand>", "\n", true);
 		ast.C.visit(this, null);
 		ast.E1.visit(this, null);
 		ast.E2.visit(this, null);
-		ast.rangeVar.visit(null, null);
+		ast.rangeVar.visit(this, null);
+		writeToBuffer("</RepeatForRangeUntilCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 		
 	}
 
 	public Object visitRepeatInCommand(RepeatInCommand ast, Object o){
+		indentationLevel++;
+		writeToBuffer("<RepeatInCommand>", "\n", true);
 		ast.C.visit(this, null);
 		ast.inVar.visit(this, null);
+		writeToBuffer("</RepeatInCommand>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
@@ -215,70 +297,114 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Expressions ">
 	// Expressions
 	public Object visitArrayExpression(ArrayExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<ArrayExpression>", "\n", true);
 		ast.AA.visit(this, null);
+		writeToBuffer("</ArrayExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitBinaryExpression(BinaryExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<BinaryExpression>", "\n", true);
 		ast.E1.visit(this, null);
 		ast.E2.visit(this, null);
 		ast.O.visit(this, null);
+		writeToBuffer("</BinaryExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitCallExpression(CallExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<CallExpression>", "\n", true);
 		ast.I.visit(this, null);
 		ast.APS.visit(this, null);
+		writeToBuffer("</CallExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitCharacterExpression(CharacterExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<CharacterExpression>", "\n", true);
 		ast.CL.visit(this, null);
+		writeToBuffer("</CharacterExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitEmptyExpression(EmptyExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<EmptyExpression/>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitIfExpression(IfExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<IfExpression>", "\n", true);
 		ast.E1.visit(this, null);
 		ast.E2.visit(this, null);
 		ast.E3.visit(this, null);
+		writeToBuffer("</IfExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitIntegerExpression(IntegerExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<IntegerExpression>", "\n", true);
+		ast.IL.visit(this, null);
+		writeToBuffer("</IntegerExpression>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitLetExpression(LetExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<LetExpression>", "\n", true);
 		ast.D.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</LetExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitRecordExpression(RecordExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<RecordExpression>", "\n", true);
 		ast.RA.visit(this, null);
+		writeToBuffer("<RecordExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitUnaryExpression(UnaryExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<UnaryExpression>", "\n", true);
 		ast.E.visit(this, null);
 		ast.O.visit(this, null);
+		writeToBuffer("</UnaryExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitVnameExpression(VnameExpression ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<VnameExpression>", "\n", true);
 		ast.V.visit(this, null);
+		writeToBuffer("</VnameExpression>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
@@ -287,150 +413,140 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Declarations ">
 	// Declarations
 	public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<BinaryOperatorDeclaration>", "\n", true);
+		ast.ARG1.visit(this, null);
+		ast.ARG2.visit(this, null);
+		ast.O.visit(this, null);
+		ast.RES.visit(this, null);
+		writeToBuffer("</BinaryOperatorDeclaration>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
-		String name = ast.I.spelling;
-		String type = "N/A";
-		try {
-			int size = (ast.entity != null ? ast.entity.size : 0);
-			int level = -1;
-			int displacement = -1;
-			int value = -1;
-
-			if (ast.entity instanceof KnownValue) {
-				type = "KnownValue";
-				value = ((KnownValue) ast.entity).value;
-			} else if (ast.entity instanceof UnknownValue) {
-				type = "UnknownValue";
-				level = ((UnknownValue) ast.entity).address.level;
-				displacement = ((UnknownValue) ast.entity).address.displacement;
-			}
-			addIdentifier(name, type, size, level, displacement, value);
-		} catch (NullPointerException e) {
-		}
-
+		indentationLevel++;
+		writeToBuffer("<ConstOperatorDeclaration>", "\n", true);
 		ast.E.visit(this, null);
 		ast.I.visit(this, null);
+		writeToBuffer("</ConstOperatorDeclaration>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"KnownRoutine",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownRoutine) ast.entity).address.level,
-				((KnownRoutine) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
+		indentationLevel++;
+		writeToBuffer("<FuncDeclaration>", "\n", true);
+		ast.I.visit(this, null);
 		ast.T.visit(this, null);
 		ast.FPS.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</FuncDeclaration>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling, "KnownRoutine",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownRoutine) ast.entity).address.level,
-				((KnownRoutine) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
 
+		indentationLevel++;
+		writeToBuffer("<ProcDeclaration>", "\n", true);
+		ast.I.visit(this, null);
 		ast.FPS.visit(this, null);
 		ast.C.visit(this, null);
+		writeToBuffer("</ProcDeclaration>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SequentialDeclaration>", "\n", true);
 		ast.D1.visit(this, null);
 		ast.D2.visit(this, null);
+		writeToBuffer("</SequentialDeclaration>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<TypeDeclaration>", "\n", true);
+		ast.I.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</TypeDeclaration>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitUnaryOperatorDeclaration(UnaryOperatorDeclaration ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<UnaryOperatorDeclaration>", "\n", true);
+		ast.ARG.visit(this, null);
+		ast.O.visit(this, null);
+		ast.RES.visit(this, null);
+		writeToBuffer("</UnaryOperatorDeclaration>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitVarDeclaration(VarDeclaration ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"KnownAddress",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownAddress) ast.entity).address.level,
-				((KnownAddress) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
-
+		indentationLevel++;
+		writeToBuffer("<VarDeclaration>", "\n", true);
+		ast.I.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</VarDeclaration>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object o){
-		try {
-			addIdentifier(ast.I.spelling,
-				"KnownAddress",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownAddress) ast.entity).address.level,
-				((KnownAddress) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
-
+		indentationLevel++;
+		writeToBuffer("<RangeVarDeclaration>", "\n", true);
 		ast.I.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</RangeVarDeclaration>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitInVarDecl(InVarDecl ast, Object o){
-		try {
-			addIdentifier(ast.I.spelling,
-				"KnownAddress",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownAddress) ast.entity).address.level,
-				((KnownAddress) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
-
+		indentationLevel++;
+		writeToBuffer("<InVarDeclaration>", "\n", true);
 		ast.I.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</InVarDeclaration>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o){
-		try {
-			addIdentifier(ast.I.spelling,
-				"KnownAddress",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownAddress) ast.entity).address.level,
-				((KnownAddress) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
-
+		indentationLevel++;
+		writeToBuffer("<VarExpDeclaration>", "\n", true);
 		ast.I.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</VarExpDeclaration>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
+		indentationLevel++;
+		writeToBuffer("<MultipleProcDeclaration>", "\n", true);
+		ast.D1.visit(this, null);
+		ast.D2.visit(this, null);
+		writeToBuffer("</MultipleProcDeclaration>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
@@ -440,6 +556,12 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Cases ">
 	// Cases
 	public Object visitCase(Case ast, Object o){
+		indentationLevel++;
+		writeToBuffer("<Case>", "\n", true);
+		ast.C.visit(this, null);
+		writeToBuffer("</Case>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
@@ -448,30 +570,46 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Aggregates ">
 	// Array Aggregates
 	public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<MultipleArrayAggregate>", "\n", true);
 		ast.AA.visit(this, null);
 		ast.E.visit(this, null);
+		writeToBuffer("</MultipleArrayAggregate>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSingleArrayAggregate(SingleArrayAggregate ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SingleArrayAggregate>", "\n", true);
 		ast.E.visit(this, null);
+		writeToBuffer("</SingleArrayAggregate>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	// Record Aggregates
 	public Object visitMultipleRecordAggregate(MultipleRecordAggregate ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<MultipleRecordAggregate>", "\n", true);
 		ast.E.visit(this, null);
 		ast.I.visit(this, null);
 		ast.RA.visit(this, null);
+		writeToBuffer("</MultipleRecordAggregate>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSingleRecordAggregate(SingleRecordAggregate ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SingleRecordAggregate>", "\n", true);
 		ast.E.visit(this, null);
 		ast.I.visit(this, null);
+		writeToBuffer("</SingleRecordAggregate>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
@@ -480,123 +618,144 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Parameters ">
 	// Formal Parameters
 	public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"UnknownValue",
-				(ast.entity != null ? ast.entity.size : 0),
-				((UnknownValue) ast.entity).address.level,
-				((UnknownValue) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
-
+		indentationLevel++;
+		writeToBuffer("<ConstFormalParameter>", "\n", true);
 		ast.I.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</ConstFormalParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitFuncFormalParameter(FuncFormalParameter ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"UnknownRoutine",
-				(ast.entity != null ? ast.entity.size : 0),
-				((UnknownRoutine) ast.entity).address.level,
-				((UnknownRoutine) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
+		indentationLevel++;
+		writeToBuffer("<FuncFormalParameter>", "\n", true);
+		ast.I.visit(this, null);
 		ast.FPS.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</FuncFormalParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitProcFormalParameter(ProcFormalParameter ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"UnknownRoutine",
-				(ast.entity != null ? ast.entity.size : 0),
-				((UnknownRoutine) ast.entity).address.level,
-				((UnknownRoutine) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
+		indentationLevel++;
+		writeToBuffer("<ProcFormalParameter>", "\n", true);
+		ast.I.visit(this, null);
 		ast.FPS.visit(this, null);
+		writeToBuffer("<ProcFormalParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"UnknownAddress",
-				ast.T.entity.size,
-				((UnknownAddress) ast.entity).address.level,
-				((UnknownAddress) ast.entity).address.displacement,
-				-1);
-		} catch (NullPointerException e) {
-		}
+		indentationLevel++;
+		writeToBuffer("<VarFormalParameter>", "\n", true);
+		ast.I.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</VarFormalParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitEmptyFormalParameterSequence(EmptyFormalParameterSequence ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<EmptyFormalParameter/>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitMultipleFormalParameterSequence(MultipleFormalParameterSequence ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<MultipleFormalParameter>", "\n", true);
 		ast.FP.visit(this, null);
 		ast.FPS.visit(this, null);
+		writeToBuffer("</MultipleFormalParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSingleFormalParameterSequence(SingleFormalParameterSequence ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SingleFormalParameter>", "\n", true);
 		ast.FP.visit(this, null);
+		writeToBuffer("</SingleFormalParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	// Actual Parameters
 	public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<ConstActualParameter>", "\n", true);
 		ast.E.visit(this, null);
+		writeToBuffer("</ConstActualParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitFuncActualParameter(FuncActualParameter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<FuncActualParameter>", "\n", true);
 		ast.I.visit(this, null);
+		writeToBuffer("</FuncActualParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitProcActualParameter(ProcActualParameter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<ProcActualParameter>", "\n", true);
 		ast.I.visit(this, null);
+		writeToBuffer("</ProcActualParameter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitVarActualParameter(VarActualParameter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<VarActualParameter>","\n", true);
 		ast.V.visit(this, null);
+		writeToBuffer("</VarActualParameter>","\n", true);
+		indentationLevel--;
+		
 
 		return (null);
 	}
 
 	public Object visitEmptyActualParameterSequence(EmptyActualParameterSequence ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<ProcActualParameterSequence/>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitMultipleActualParameterSequence(MultipleActualParameterSequence ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<MultipleActualParameterSequence>", "\n", true);
 		ast.AP.visit(this, null);
 		ast.APS.visit(this, null);
+		writeToBuffer("</MultipleActualParameterSequence>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSingleActualParameterSequence(SingleActualParameterSequence ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SingleActualParameterSequence>", "\n", true);
 		ast.AP.visit(this, null);
+		writeToBuffer("</SingleActualParameterSequence>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
@@ -605,89 +764,138 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Type Denoters ">
 	// Type Denoters
 	public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<AnyTypeDenoter/>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitArrayTypeDenoter(ArrayTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<ArrayTypeDenoter>", "\n", true);
 		ast.IL.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</ArrayTypeDenoter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitBoolTypeDenoter(BoolTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<BoolTypeDenoter>", "\n", true);
+		ast.visit(this, null);
+		writeToBuffer("</BoolTypeDenoter>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitCharTypeDenoter(CharTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<CharTypeDenoter/>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitErrorTypeDenoter(ErrorTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<ErrorTypeDenoter/>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SimpleTypeDenoter>", "\n", true);
 		ast.I.visit(this, null);
+		writeToBuffer("</SimpleTypeDenoter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitIntTypeDenoter(IntTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<IntTypeDenoter/>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<RecordTypeDenoter>", "\n", true);
 		ast.FT.visit(this, null);
+		writeToBuffer("</RecordTypeDenoter>", "\n", true);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"Field",
-				(ast.entity != null ? ast.entity.size : 0),
-				-1, ((Field) ast.entity).fieldOffset, -1);
-		} catch (NullPointerException e) {
-		}
+		indentationLevel++;
+		writeToBuffer("<MultipleFieldTypeDenoter>", "\n", true);
 		ast.FT.visit(this, null);
 		ast.I.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</MultipleFieldTypeDenoter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSingleFieldTypeDenoter(SingleFieldTypeDenoter ast, Object o) {
-		try {
-			addIdentifier(ast.I.spelling,
-				"Field",
-				(ast.entity != null ? ast.entity.size : 0),
-				-1, ((Field) ast.entity).fieldOffset, -1);
-		} catch (NullPointerException e) {
-		}
+		indentationLevel++;
+		writeToBuffer("<SingleFieldTypeDenoter>", "\n", true);
 		ast.I.visit(this, null);
 		ast.T.visit(this, null);
+		writeToBuffer("</SingleFieldTypeDenoter>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	// </editor-fold>
+
 	// <editor-fold defaultstate="collapsed" desc=" Literals, Identifiers and Operators ">
 	// Literals, Identifiers and Operators
 	public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<CharacterLiteral>", "", true);
+		writeToBuffer(ast.spelling, "", false);
+		writeToBuffer("</CharacterLiteral>", "\n", false);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitIdentifier(Identifier ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<Identifier>", "", true);
+		writeToBuffer(ast.spelling,"", false);
+		writeToBuffer("</Identifier>", "\n", false);
+		indentationLevel--;
+
 		return (null);
 	}
 
 	public Object visitIntegerLiteral(IntegerLiteral ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<IntegerLiteral>", "", true);
+		writeToBuffer(ast.spelling, "", false);
+		writeToBuffer("</IntegerLiteral>", "\n", false);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitOperator(Operator ast, Object o) {
-		ast.decl.visit(this, null);
+		indentationLevel++;
+		writeToBuffer("<Operator>", "", true);
+		writeToBuffer(ast.spelling, "", false);
+		writeToBuffer("<Operator/>", "\n", false);
+		indentationLevel--;
 
 		return (null);
 	}
@@ -696,68 +904,45 @@ public class TableVisitor implements Visitor {
 	// <editor-fold defaultstate="collapsed" desc=" Values or Variable Names ">
 	// Value-or-variable names
 	public Object visitDotVname(DotVname ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<DotVname>", "\n", true);
 		ast.I.visit(this, null);
 		ast.V.visit(this, null);
+		writeToBuffer("</DotVname>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 
 	public Object visitSimpleVname(SimpleVname ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SimpleVname>", "\n", true);
 		ast.I.visit(this, null);
-
+		writeToBuffer("</SimpleVname", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 
 	public Object visitSubscriptVname(SubscriptVname ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<SubscriptVname>", "\n", true);
 		ast.E.visit(this, null);
 		ast.V.visit(this, null);
+		writeToBuffer("</SubscriptVname>", "\n", true);
+		indentationLevel--;
 
 		return (null);
 	}
 	// </editor-fold>
 
-	// <editor-fold defaultstate="collapsed" desc=" Table Creation Methods ">
+	// <editor-fold defaultstate="collapsed" desc=" Program ">
 	// Programs
 	public Object visitProgram(Program ast, Object o) {
+		writeToBuffer("<Program>", "\n", true);
 		ast.C.visit(this, null);
+		writeToBuffer("</Program>", "\n", true);
 
 		return (null);
 	}
-
-	/**
-	 * Adds an identifier to the table.
-	 */
-	private void addIdentifier(String name, String type, int size, int level, int displacement, int value) {
-		boolean exists = false;
-
-		for (int i = 0; (i < model.getRowCount() && !exists); i++) {
-			if (((String) model.getValueAt(i, 0)).compareTo(name) == 0) {
-				exists = true;
-			}
-		}
-
-		if (!exists) {
-			model.addRow(new String[]{name,
-				type,
-				String.valueOf(size),
-				(level < 0 ? " " : String.valueOf(level)),
-				(displacement < 0 ? " " : String.valueOf(displacement)),
-				(value < 0 ? " " : String.valueOf(value))});
-		}
-	}
-
-	/**
-	 * Returns the filled table model.
-	 */
-	public DefaultTableModel getTable(Program ast) {
-		model = new DefaultTableModel((new String[]{"Name", "Type", "Size", "Level", "Displacement", "Value"}), 0);
-		visitProgram(ast, null);
-
-		return (model);
-	}
-
-	// </editor-fold>
-	// <editor-fold defaultstate="collapsed" desc=" Attributes ">
-	private DefaultTableModel model;
 	// </editor-fold>
 }

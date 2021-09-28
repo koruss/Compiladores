@@ -83,20 +83,31 @@ public class HTMLWriter {
 		"</head>",
 		"	<meta charset=\"utf-8\">",
 		"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+		"<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC\" crossorigin=\"anonymous\">",
 		"	<style>",
-		"		p{font-size: 1em; font-family: \"Courier New\", monospaced;}",
-		"		.literal{color : #004080;}",
-		"		.comment{color: #009933;}",
+		"		p{font-size: 1em; font-family: \"Consolas\", \"Courier New\", monospaced;}",
+		"		.literal{color : #0000cd;}",
+		"		.comment{color: #00b300;}",
 		"		.reservedword {font-weight:bold;}" //strong tags can also be used.
 		,
 		 "	</style>",
 		"</head>",
-		"<body>",
-		"	<p>"
+		"<body class=\"d-flex flex-column min-vh-100\">",
+		"	<div class=\"container\">",
+		"		<div class=\"bg-light p-5 rounded-lg m-3\">",
+		"			<p>"
 	);
 
 	public static String htmlCloser = String.join("\n",
-		"	<p>",
+		"			</p>",
+		"		</div>",
+		"	</div>",
+		"	<footer class=\"footer mt-auto py-3 bg-light\">",
+		"	  <div class=\"d-flex justify-content-between\">",
+		"	    <span class=\"text-muted px-5\">A. Rivera, A. Cornejo y K. Corrales</span>",
+		"	    <span class=\"text-muted px-5\">Compiladores e interpretes - ITCR - 2021</span>",
+		"	  </div>",
+		"	</footer>",
 		"</body>",
 		"</html>"
 	);

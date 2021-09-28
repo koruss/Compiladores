@@ -48,7 +48,7 @@ public class IDECompiler {
         SourceFile source = new SourceFile(sourceName);
         Scanner scanner = new Scanner(source, sourceName);
         report = new IDEReporter();
-        Parser parser = new Parser(scanner, report);
+        Parser parser = new Parser(scanner, report, sourceName);
         boolean success = false;
         
         rootAST = parser.parseProgram();
@@ -70,7 +70,6 @@ public class IDECompiler {
 
         if (success){
             System.out.println("Compilation was successful.");
-			scanner.finishScan();
 		}
         else
             System.out.println("Compilation was unsuccessful.");

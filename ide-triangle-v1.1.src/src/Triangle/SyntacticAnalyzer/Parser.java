@@ -13,6 +13,7 @@
  */
 package Triangle.SyntacticAnalyzer;
 
+import Core.Visitors.XMLVisitor;
 import Triangle.ErrorReporter;
 import Triangle.AbstractSyntaxTrees.ActualParameter;
 import Triangle.AbstractSyntaxTrees.ActualParameterSequence;
@@ -99,10 +100,20 @@ public class Parser {
 	private ErrorReporter errorReporter;
 	private Token currentToken;
 	private SourcePosition previousTokenPosition;
+	private XMLVisitor xmlWriter; // Modified to add XML parsing functionality.
 
 	public Parser(Scanner lexer, ErrorReporter reporter) {
 		lexicalAnalyser = lexer;
 		errorReporter = reporter;
+		xmlWriter = new XMLVisitor();
+		previousTokenPosition = new SourcePosition();
+	}
+
+	// Modified to add XML parsing functionality.
+	public Parser(Scanner lexer, ErrorReporter reporter, String fileName) {
+		lexicalAnalyser = lexer;
+		errorReporter = reporter;
+		xmlWriter = new XMLVisitor(fileName);
 		previousTokenPosition = new SourcePosition();
 	}
 
@@ -165,6 +176,8 @@ public class Parser {
 		} catch (SyntaxError s) {
 			return null;
 		}
+		xmlWriter.writeFile(programAST);
+		lexicalAnalyser.finishScan();
 		return programAST;
 	}
 
