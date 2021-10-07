@@ -209,7 +209,16 @@ public final class Scanner {
 
 			case '.':
 				takeIt();
+				if(currentChar == '.'){
+					takeIt();
+					return Token.DOUBLE_DOT;
+				}
 				return Token.DOT;
+
+
+			case '|':
+				takeIt();
+				return Token.VERTICAL_BAR;
 
 			case ':':
 				takeIt();

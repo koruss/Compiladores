@@ -353,6 +353,7 @@ public class Parser {
 				finish(commandPos);
 				commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);
 			}
+			break;
 
 			// case Token.LET:
 			// {
@@ -509,17 +510,17 @@ public class Parser {
 			// commandAST = new WhileCommand(eAST, cAST, commandPos);
 			// }
 			// break;
-			case Token.SEMICOLON:
-			case Token.END:
-			case Token.ELSE:
-			case Token.IN:
 			case Token.SKIP: {
 				acceptIt();
 				finish(commandPos);
 				commandAST = new EmptyCommand(commandPos);
 			}
+			case Token.SEMICOLON:
+			//case Token.END:
+			//case Token.ELSE:
+			//case Token.IN:
+			//case Token.EOT:
 			break;
-			// case Token.EOT:
 			// finish(commandPos);
 			// commandAST = new EmptyCommand(commandPos);
 			// break;
