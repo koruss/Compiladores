@@ -993,6 +993,10 @@ public class Parser {
 		//accept(Token.VERTICAL_BAR);
 		//Declaration pAST2 = parseProc();
 		dAST = pAST;
+                if (currentToken.kind != Token.VERTICAL_BAR){
+                    syntacticError("One or more Proc-Func expected", "");
+                }
+         
 		while (currentToken.kind == Token.VERTICAL_BAR) {
 			acceptIt();
 			pAST = parseProc();
