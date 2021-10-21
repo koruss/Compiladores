@@ -7,7 +7,7 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
  *
  * @author Andres
  */
-public class RangeVarDecl extends AST {
+public class RangeVarDecl extends Declaration{
 
 	public Identifier I;
 	public Expression E;

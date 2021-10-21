@@ -11,7 +11,7 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
  *
  * @author Andres
  */
-public class InVarDecl extends AST {
+public class InVarDecl extends Declaration{
 
 	public Identifier I;
 	public Expression E;

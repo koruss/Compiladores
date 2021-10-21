@@ -168,26 +168,74 @@ public final class Checker implements Visitor {
 	}
 
 	public Object visitUntilCommand(UntilCommand ast, Object obj) {
+		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		if (!eType.equals(StdEnvironment.booleanType)) {
+			reporter.reportError("Boolean expression expected here", "", ast.E.position);
+		}
+		ast.C.visit(this, null);
 		return null;
 	}
 
 	public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
+		ast.C.visit(this, null);
+		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		if (!eType.equals(StdEnvironment.booleanType)) {
+			reporter.reportError("Boolean expression expected here", "", ast.E.position);
+		}
 		return null;
 	}
 
 	public Object visitDoUntilCommand(DoUntilCommand ast, Object obj) {
+		ast.C.visit(this, null);
+		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		if (!eType.equals(StdEnvironment.booleanType)) {
+			reporter.reportError("Boolean expression expected here", "", ast.E.position);
+		}
 		return null;
 	}
 
 	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object obj) {
+		ast.rangeVar.visit(this, null);
+		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		if (!eType.equals(StdEnvironment.integerType)) {
+			reporter.reportError("Integer expression expected here", "",
+				ast.E.position);
+		}
+		ast.C.visit(this, null);
 		return null;
 	}
 
 	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj) {
+		ast.rangeVar.visit(this, null);
+		TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
+		if (!e1Type.equals(StdEnvironment.integerType)) {
+			reporter.reportError("Integer expression expected here", "",
+				ast.E1.position);
+		}
+
+		ast.C.visit(this, null);
+
+		TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);
+		if (!e2Type.equals(StdEnvironment.booleanType)) {
+			reporter.reportError("Boolean expression expected here", "", ast.E2.position);
+		}
 		return null;
 	}
 
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
+		ast.rangeVar.visit(this, null);
+		TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
+		if (!e1Type.equals(StdEnvironment.integerType)) {
+			reporter.reportError("Integer expression expected here", "",
+				ast.E1.position);
+		}
+
+		ast.C.visit(this, null);
+
+		TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);
+		if (!e2Type.equals(StdEnvironment.booleanType)) {
+			reporter.reportError("Boolean expression expected here", "", ast.E2.position);
+		}
 		return null;
 	}
 
@@ -405,10 +453,32 @@ public final class Checker implements Visitor {
 	}
 
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object obj){
+		idTable.enter(ast.I.spelling, ast);
+		if (ast.duplicated) {
+			reporter.reportError("identifier \"%\" already declared",
+				ast.I.spelling, ast.position);
+		}
+		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		if (!eType.equals(StdEnvironment.integerType)) {
+			reporter.reportError("Integer expression expected here", "",
+				ast.E.position);
+		}
+		
 		return null;
 	}
 
 	public Object visitInVarDecl(InVarDecl ast, Object obj){
+		idTable.enter(ast.I.spelling, ast);
+		if (ast.duplicated) {
+			reporter.reportError("identifier \"%\" already declared",
+				ast.I.spelling, ast.position);
+		}
+		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		if (eType != StdEnvironment.errorType){
+			if(!(eType instanceof ArrayTypeDenoter)){
+				reporter.reportError("array expected here", "", ast.E.position);
+			} 		
+		}
 		return null;
 	}
 
