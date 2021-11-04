@@ -54,6 +54,7 @@ import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RangeVarDecl;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RecursiveDeclaration;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeUntilCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeWhileCommand;
@@ -548,6 +549,15 @@ public class XMLVisitor implements Visitor{
 		writeToBuffer("</LocalDeclaration>", "\n", true);
 		indentationLevel--;
 
+		return (null);
+	}
+        
+        public Object visitRecursiveDeclaration(RecursiveDeclaration ast,  Object o){
+		indentationLevel++;
+		writeToBuffer("<RecursiveDeclaration>", "\n", true);
+		ast.D.visit(this, null);
+		writeToBuffer("</RecursiveDeclaration>", "\n", true);
+		indentationLevel--;
 		return (null);
 	}
 

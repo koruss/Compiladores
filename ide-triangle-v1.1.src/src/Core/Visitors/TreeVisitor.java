@@ -56,6 +56,7 @@ import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RangeVarDecl;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RecursiveDeclaration;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeUntilCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeWhileCommand;
@@ -256,6 +257,11 @@ public class TreeVisitor implements Visitor {
 	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
 		return (createBinary("Local Declaration", ast.D1, ast.D2));
 	}
+        
+        public Object visitRecursiveDeclaration(RecursiveDeclaration ast,  Object o){
+		return (createUnary("Recursive Declaration", ast.D));
+	}
+        
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
 		return (createBinary("Multiple Procedure Declaration", ast.D1, ast.D2));

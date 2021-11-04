@@ -55,6 +55,7 @@ import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RangeVarDecl;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RecursiveDeclaration;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeUntilCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeWhileCommand;
@@ -432,6 +433,10 @@ public class TableVisitor implements Visitor {
 	}
 
 	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+		return (null);
+	}
+        
+        public Object visitRecursiveDeclaration(RecursiveDeclaration ast,  Object o){
 		return (null);
 	}
 
