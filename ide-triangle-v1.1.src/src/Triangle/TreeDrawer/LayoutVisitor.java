@@ -67,6 +67,7 @@ import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RangeVarDecl;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RecursiveDeclaration;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeUntilCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeWhileCommand;
@@ -255,6 +256,10 @@ public class LayoutVisitor implements Visitor {
 	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
 		return layoutBinary("LocalDecl", ast.D1, ast.D2);
 	}
+        
+        public Object visitRecursiveDeclaration(RecursiveDeclaration ast,Object o){
+            return layoutUnary("RecursiveDecl", ast.D);
+        }
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
 
@@ -600,5 +605,8 @@ public class LayoutVisitor implements Visitor {
 
 		return r;
 	}
+
+
+
 
 }

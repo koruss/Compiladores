@@ -826,6 +826,7 @@ public class Parser {
 				dAST = parseProcs();
 				accept(Token.END);
 				finish(declarationPos);
+                                
 			}
 			break;
 
