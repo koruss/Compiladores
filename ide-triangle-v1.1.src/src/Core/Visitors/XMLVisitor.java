@@ -39,6 +39,7 @@ import Triangle.AbstractSyntaxTrees.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.LetCommand;
 import Triangle.AbstractSyntaxTrees.LetExpression;
+import Triangle.AbstractSyntaxTrees.LocalDeclaration;
 import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
 import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
 import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
@@ -534,6 +535,17 @@ public class XMLVisitor implements Visitor{
 		ast.I.visit(this, null);
 		ast.E.visit(this, null);
 		writeToBuffer("</VarExpDeclaration>", "\n", true);
+		indentationLevel--;
+
+		return (null);
+	}
+
+	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+		indentationLevel++;
+		writeToBuffer("<LocalDeclaration>", "\n", true);
+		ast.D1.visit(this, null);
+		ast.D2.visit(this, null);
+		writeToBuffer("</LocalDeclaration>", "\n", true);
 		indentationLevel--;
 
 		return (null);

@@ -60,6 +60,7 @@ import Triangle.AbstractSyntaxTrees.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.LetCommand;
 import Triangle.AbstractSyntaxTrees.LetExpression;
+import Triangle.AbstractSyntaxTrees.LocalDeclaration;
 import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
 import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
 import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
@@ -402,6 +403,10 @@ public final class Encoder implements Visitor {
 
 	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o){
 		return null;
+	}
+
+	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+		return (null);
 	}
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){

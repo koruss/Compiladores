@@ -40,6 +40,7 @@ import Triangle.AbstractSyntaxTrees.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.LetCommand;
 import Triangle.AbstractSyntaxTrees.LetExpression;
+import Triangle.AbstractSyntaxTrees.LocalDeclaration;
 import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
 import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
 import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
@@ -427,6 +428,10 @@ public class TableVisitor implements Visitor {
 
 		ast.I.visit(this, null);
 		ast.E.visit(this, null);
+		return (null);
+	}
+
+	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
 		return (null);
 	}
 

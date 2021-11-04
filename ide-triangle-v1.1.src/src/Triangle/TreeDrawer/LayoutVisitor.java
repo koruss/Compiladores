@@ -52,6 +52,7 @@ import Triangle.AbstractSyntaxTrees.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.LetCommand;
 import Triangle.AbstractSyntaxTrees.LetExpression;
+import Triangle.AbstractSyntaxTrees.LocalDeclaration;
 import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
 import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
 import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
@@ -250,6 +251,11 @@ public class LayoutVisitor implements Visitor {
 	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o){
 		return (layoutBinary("InVarDecl", ast.I, ast.E));
 	}
+
+	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+		return layoutBinary("LocalDecl", ast.D1, ast.D2);
+	}
+
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
 
 		return layoutBinary("MultProcDecl", ast.D1, ast.D2);

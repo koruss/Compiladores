@@ -55,6 +55,7 @@ import Triangle.AbstractSyntaxTrees.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.LetCommand;
 import Triangle.AbstractSyntaxTrees.LetExpression;
+import Triangle.AbstractSyntaxTrees.LocalDeclaration;
 import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
 import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
 import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
@@ -167,6 +168,7 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitUntilCommand(UntilCommand ast, Object obj) {
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 		if (!eType.equals(StdEnvironment.booleanType)) {
@@ -176,6 +178,7 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
 		ast.C.visit(this, null);
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -185,6 +188,7 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitDoUntilCommand(DoUntilCommand ast, Object obj) {
 		ast.C.visit(this, null);
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -194,6 +198,7 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object obj) {
 		ast.rangeVar.visit(this, null);
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -205,6 +210,7 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj) {
 		ast.rangeVar.visit(this, null);
 		TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
@@ -222,6 +228,7 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
 		ast.rangeVar.visit(this, null);
 		TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
@@ -239,7 +246,10 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitRepeatInCommand(RepeatInCommand ast, Object obj) {
+		ast.inVar.visit(this, null);
+		ast.C.visit(this, null);
 		return null;
 	}
 
@@ -452,38 +462,54 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//NEW
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object obj){
-		idTable.enter(ast.I.spelling, ast);
-		if (ast.duplicated) {
-			reporter.reportError("identifier \"%\" already declared",
-				ast.I.spelling, ast.position);
-		}
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 		if (!eType.equals(StdEnvironment.integerType)) {
 			reporter.reportError("Integer expression expected here", "",
 				ast.E.position);
 		}
-		
-		return null;
-	}
 
-	public Object visitInVarDecl(InVarDecl ast, Object obj){
 		idTable.enter(ast.I.spelling, ast);
 		if (ast.duplicated) {
 			reporter.reportError("identifier \"%\" already declared",
 				ast.I.spelling, ast.position);
 		}
+		
+		return null;
+	}
+
+	//NEW
+	public Object visitInVarDecl(InVarDecl ast, Object obj){
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+		//Revisa si la expresión es estrictamente un arreglo.
 		if (eType != StdEnvironment.errorType){
 			if(!(eType instanceof ArrayTypeDenoter)){
 				reporter.reportError("array expected here", "", ast.E.position);
 			} 		
+		}
+
+		//Agrega el identificador al idTable.
+		idTable.enter(ast.I.spelling, ast);
+		//Revisar que no exista un identificador con el mismo nombre.
+		if (ast.duplicated) {
+			reporter.reportError("identifier \"%\" already declared",
+				ast.I.spelling, ast.position);
 		}
 		return null;
 	}
 
 	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o){
 		return null;
+	}
+
+	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+		idTable.openScope();
+    	ast.D1.visit(this, null);
+    	idTable.openScope();
+    	ast.D2.visit(this, null);
+    	idTable.closeLocalScope();
+    	return null;
 	}
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){

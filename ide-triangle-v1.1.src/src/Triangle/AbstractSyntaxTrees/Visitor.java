@@ -90,6 +90,8 @@ public interface Visitor {
 
 	public abstract Object visitVarExpDeclaration(VarExpDeclaration ast, Object o);
 
+	public abstract Object visitLocalDeclaration(LocalDeclaration ast, Object o);
+
 	public abstract Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o);
 	
 	// Cases

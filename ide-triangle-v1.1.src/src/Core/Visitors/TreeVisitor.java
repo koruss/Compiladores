@@ -41,6 +41,7 @@ import Triangle.AbstractSyntaxTrees.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.LetCommand;
 import Triangle.AbstractSyntaxTrees.LetExpression;
+import Triangle.AbstractSyntaxTrees.LocalDeclaration;
 import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
 import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
 import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
@@ -250,6 +251,10 @@ public class TreeVisitor implements Visitor {
 
 	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o){
 		return (createBinary("Variable Expression Declaration", ast.I, ast.E));
+	}
+
+	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+		return (createBinary("Local Declaration", ast.D1, ast.D2));
 	}
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
