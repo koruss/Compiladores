@@ -916,7 +916,7 @@ public class XMLVisitor implements Visitor{
 		indentationLevel++;
 		writeToBuffer("<Operator>", "", true);
 		writeToBuffer(ast.spelling, "", false);
-		writeToBuffer("<Operator/>", "\n", false);
+		writeToBuffer("</Operator>", "\n", false);
 		indentationLevel--;
 
 		return (null);

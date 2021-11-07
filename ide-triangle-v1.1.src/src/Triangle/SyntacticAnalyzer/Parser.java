@@ -69,6 +69,7 @@ import Triangle.AbstractSyntaxTrees.RangeVarDecl;
 import Triangle.AbstractSyntaxTrees.RecordAggregate;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RecursiveDeclaration;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeUntilCommand;
 import Triangle.AbstractSyntaxTrees.RepeatForRangeWhileCommand;
@@ -517,11 +518,11 @@ public class Parser {
 				commandAST = new EmptyCommand(commandPos);
 			}
 			case Token.SEMICOLON:
-			//case Token.END:
-			//case Token.ELSE:
-			//case Token.IN:
-			//case Token.EOT:
-			break;
+				//case Token.END:
+				//case Token.ELSE:
+				//case Token.IN:
+				//case Token.EOT:
+				break;
 			// finish(commandPos);
 			// commandAST = new EmptyCommand(commandPos);
 			// break;
@@ -826,7 +827,7 @@ public class Parser {
 				dAST = parseProcs();
 				accept(Token.END);
 				finish(declarationPos);
-                                
+				dAST = new RecursiveDeclaration(dAST, declarationPos);
 			}
 			break;
 
@@ -843,7 +844,7 @@ public class Parser {
 
 			default:
 				syntacticError("\"%\" cannot start a declaration",
-					currentToken.spelling);
+						currentToken.spelling);
 				break;
 		}
 
@@ -972,13 +973,13 @@ public class Parser {
 				Expression eAST = parseExpression();
 				finish(declarationPos);
 				DeclarationAST = new FuncDeclaration(iAST, fpsAST, tAST, eAST,
-					declarationPos);
+						declarationPos);
 			}
 			break;
 
 			default:
 				syntacticError("\"%\" cannot start a declaration",
-					currentToken.spelling);
+						currentToken.spelling);
 				break;
 
 		}
@@ -987,25 +988,39 @@ public class Parser {
 
 	// Function that parses multiple procs or functions. 
 	Declaration parseProcs() throws SyntaxError {
-		Declaration dAST = null;
-
+		Declaration dAST = null, dAST2 = null;
 		SourcePosition declarationPos = new SourcePosition();
 		start(declarationPos);
-		Declaration pAST = parseProc();
-		//accept(Token.VERTICAL_BAR);
-		//Declaration pAST2 = parseProc();
-		dAST = pAST;
-                if (currentToken.kind != Token.VERTICAL_BAR){
-                    syntacticError("One or more Proc-Func expected", "");
-                }
-         
-		while (currentToken.kind == Token.VERTICAL_BAR) {
-			acceptIt();
-			pAST = parseProc();
-			finish(declarationPos);
-			dAST = new MultipleProcDeclaration(pAST, dAST,
-				declarationPos);
+
+		switch (currentToken.kind) {
+			case Token.PROC:
+			case Token.FUNC:
+				dAST = parseProc();
+				finish(declarationPos);
+				break;
+			default:
+				syntacticError("\"%\" proc or func expected",
+						currentToken.spelling);
+				break;
 		}
+
+		do {
+			accept(Token.VERTICAL_BAR);
+			switch (currentToken.kind) {
+				case Token.PROC:
+				case Token.FUNC:
+					start(declarationPos);
+					dAST2 = parseProc();
+					finish(declarationPos);
+					dAST = new SequentialDeclaration(dAST, dAST2, declarationPos);
+					break;
+				default:
+					syntacticError("\"%\" proc or func expected",
+							currentToken.spelling);
+					break;
+			}
+		} while (currentToken.kind == Token.VERTICAL_BAR);
+
 		return dAST;
 	}
 
@@ -1014,9 +1029,6 @@ public class Parser {
 	// CASES
 	//
 	///////////////////////////////////////////////////////////////////////////////
-
-
-
 	///////////////////////////////////////////////////////////////////////////////
 	//
 	// PARAMETERS

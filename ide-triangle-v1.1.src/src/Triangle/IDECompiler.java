@@ -37,7 +37,7 @@ public class IDECompiler {
      * Particularly the same compileProgram method from the Triangle.Compiler
      * class.
      * @param sourceName Path to the source file.
-     * @return True if compilation was succesful.
+     * @return True if compilation was successful.
      */
     public boolean compileProgram(String sourceName) {
         System.out.println("********** " +

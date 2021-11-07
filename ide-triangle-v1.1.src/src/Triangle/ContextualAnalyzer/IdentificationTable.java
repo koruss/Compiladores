@@ -14,21 +14,35 @@
 package Triangle.ContextualAnalyzer;
 
 import Triangle.AbstractSyntaxTrees.Declaration;
+import Triangle.AbstractSyntaxTrees.Identifier;
+import java.util.ArrayList;
 
 public final class IdentificationTable {
 
 	private int level;
+	private int recursiveDepth;
 	private IdEntry latest;
+	public ArrayList<RecursiveCall> recursiveCalls;
+	public ArrayList<FutureCallExpression> futureCallExpressions;
 
 	public IdentificationTable() {
-		level = 0;
+		level = recursiveDepth = 0;
 		latest = null;
+		recursiveCalls = new ArrayList<>();
+		futureCallExpressions = new ArrayList<>();
+	}
+
+	public IdentificationTable(IdentificationTable oldIdTable) {
+		this.level = oldIdTable.level;
+		this.latest = oldIdTable.latest;
+		this.futureCallExpressions = oldIdTable.futureCallExpressions;
+		//this.recLevel = oldIdTable.recLevel;
+		//this.pendingCalls = oldIdTable.pendingCalls;
 	}
 
 	// Opens a new level in the identification table, 1 higher than the
 	// current topmost level.
 	public void openScope() {
-
 		level++;
 	}
 
@@ -70,6 +84,16 @@ public final class IdentificationTable {
 
 		//Finally, commit the scope level.
 		this.level = level - 2;
+	}
+
+	// Adds a level to the recursion depth.
+	public void openRecursiveScope() {
+		recursiveDepth++;
+	}
+
+	// Removes a level from the recursion depth.
+	public void closeRecursiveScope() {
+		recursiveDepth--;
 	}
 
 	// Makes a new entry in the identification table for the given identifier
@@ -124,6 +148,58 @@ public final class IdentificationTable {
 		}
 
 		return attr;
+	}
+
+	public void addRecursiveCall(RecursiveCall pendingCall) {
+		recursiveCalls.add(pendingCall);
+	}
+
+	public void addFutureCallExp(FutureCallExpression ast) {
+		this.futureCallExpressions.add(ast);
+	}
+
+	public ArrayList<RecursiveCall> checkRecursiveCalls(Identifier pfId) {
+
+		ArrayList<RecursiveCall> toVisit = new ArrayList<>();
+		//(When the program access this method,it does it in the level of the routine's body, so it's needed to subtract 1
+		//to get the level of its declaration)
+		int declLevel = level - 1;
+
+		for (RecursiveCall c : recursiveCalls) //Check if the call's level is deeper than the level of the declaration.
+		{
+			if (c.getLevel() > declLevel && c.getProcFuncIdentifier().equals(pfId)) {
+				toVisit.add(c);
+			}
+		}
+
+		recursiveCalls.removeAll(toVisit);
+
+		return toVisit;
+	}
+
+	//Getters and Setters
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
+	public int getRecursiveDepth() {
+		return recursiveDepth;
+	}
+
+	public void setRecursiveDepth(int recursiveDepth) {
+		this.recursiveDepth = recursiveDepth;
+	}
+
+	public IdEntry getLatest() {
+		return latest;
+	}
+
+	public void setLatest(IdEntry latest) {
+		this.latest = latest;
 	}
 
 }
