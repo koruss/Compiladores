@@ -88,6 +88,7 @@ import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
@@ -138,28 +139,28 @@ public class LayoutVisitor implements Visitor {
 		return (layoutBinary("UntilCom", ast.E, ast.C));
 	}
 
-	public Object visitDoWhileCommand(DoWhileCommand ast, Object obj){
+	public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
 		return (layoutBinary("DoWhileCom", ast.E, ast.C));
 	}
 
-	public Object visitDoUntilCommand(DoUntilCommand ast, Object obj){
+	public Object visitDoUntilCommand(DoUntilCommand ast, Object obj) {
 		return (layoutBinary("DoUntilCom", ast.E, ast.C));
 	}
 
-	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object obj){
+	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object obj) {
 		return (layoutTernary("Repeat For Range Command", ast.rangeVar, ast.E, ast.C));
-		
+
 	}
 
-	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj){
+	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj) {
 		return (layoutQuaternary("Repeat For Range While Command", ast.rangeVar, ast.E1, ast.C, ast.E2));
 	}
 
-	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj){
+	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
 		return (layoutQuaternary("Repeat For Range Until Command", ast.rangeVar, ast.E1, ast.C, ast.E2));
 	}
 
-	public Object visitRepeatInCommand(RepeatInCommand ast, Object obj){
+	public Object visitRepeatInCommand(RepeatInCommand ast, Object obj) {
 		return (layoutBinary("Repeat In Command", ast.inVar, ast.C));
 	}
 
@@ -241,6 +242,10 @@ public class LayoutVisitor implements Visitor {
 		return layoutBinary("VarDecl.", ast.I, ast.T);
 	}
 
+	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o) {
+		return layoutTernary("VarDeclInferred", ast.I, ast.T, ast.E);
+	}
+
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object obj) {
 		return (layoutBinary("RangeVarDecl.", ast.I, ast.E));
 	}
@@ -249,31 +254,30 @@ public class LayoutVisitor implements Visitor {
 		return (layoutBinary("InVarDecl", ast.I, ast.E));
 	}
 
-	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o){
+	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o) {
 		return (layoutBinary("InVarDecl", ast.I, ast.E));
 	}
 
-	public Object visitLocalDeclaration(LocalDeclaration ast,  Object o){
+	public Object visitLocalDeclaration(LocalDeclaration ast, Object o) {
 		return layoutBinary("LocalDecl", ast.D1, ast.D2);
 	}
-        
-        public Object visitRecursiveDeclaration(RecursiveDeclaration ast,Object o){
-            return layoutUnary("RecursiveDecl", ast.D);
-        }
 
-	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o){
+	public Object visitRecursiveDeclaration(RecursiveDeclaration ast, Object o) {
+		return layoutUnary("RecursiveDecl", ast.D);
+	}
+
+	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o) {
 
 		return layoutBinary("MultProcDecl", ast.D1, ast.D2);
 	}
 
 	// <editor-fold defaultstate="collapsed" desc=" Cases ">
 	// Cases
-	public Object visitCase(Case ast, Object o){
+	public Object visitCase(Case ast, Object o) {
 		return layoutUnary("Case", ast.C);
 	}
 
 	// </editor-fold>
-
 	// Array Aggregates
 	public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast, Object obj) {
 		return layoutBinary("Mult.ArrayAgg.", ast.E, ast.AA);
@@ -282,7 +286,6 @@ public class LayoutVisitor implements Visitor {
 	public Object visitSingleArrayAggregate(SingleArrayAggregate ast, Object obj) {
 		return layoutUnary("Sing.ArrayAgg.", ast.E);
 	}
-
 
 	// Record Aggregates
 	public Object visitMultipleRecordAggregate(MultipleRecordAggregate ast, Object obj) {
@@ -420,7 +423,7 @@ public class LayoutVisitor implements Visitor {
 
 	public Object visitSubscriptVname(SubscriptVname ast, Object obj) {
 		return layoutBinary("Sub.Vname",
-			ast.V, ast.E);
+				ast.V, ast.E);
 	}
 
 	// Programs
@@ -461,7 +464,7 @@ public class LayoutVisitor implements Visitor {
 	}
 
 	private DrawingTree layoutTernary(String name, AST child1, AST child2,
-		AST child3) {
+			AST child3) {
 		DrawingTree dt = layoutCaption(name);
 		DrawingTree d1 = (DrawingTree) child1.visit(this, null);
 		DrawingTree d2 = (DrawingTree) child2.visit(this, null);
@@ -472,7 +475,7 @@ public class LayoutVisitor implements Visitor {
 	}
 
 	private DrawingTree layoutQuaternary(String name, AST child1, AST child2,
-		AST child3, AST child4) {
+			AST child3, AST child4) {
 		DrawingTree dt = layoutCaption(name);
 		DrawingTree d1 = (DrawingTree) child1.visit(this, null);
 		DrawingTree d2 = (DrawingTree) child2.visit(this, null);
@@ -491,9 +494,9 @@ public class LayoutVisitor implements Visitor {
 		dt.children[0].offset.y = y + dt.height;
 		dt.children[0].offset.x = x1;
 		dt.contour.upper_head = new Polyline(0, dt.height,
-			new Polyline(x1, y, dt.contour.upper_head));
+				new Polyline(x1, y, dt.contour.upper_head));
 		dt.contour.lower_head = new Polyline(0, dt.height,
-			new Polyline(x2, y, dt.contour.lower_head));
+				new Polyline(x2, y, dt.contour.lower_head));
 	}
 
 	private int join(DrawingTree dt) {
@@ -588,7 +591,7 @@ public class LayoutVisitor implements Visitor {
 	}
 
 	private Polyline bridge(Polyline line1, int x1, int y1,
-		Polyline line2, int x2, int y2) {
+			Polyline line2, int x2, int y2) {
 		int dy, dx, s;
 		Polyline r;
 
@@ -605,8 +608,5 @@ public class LayoutVisitor implements Visitor {
 
 		return r;
 	}
-
-
-
 
 }

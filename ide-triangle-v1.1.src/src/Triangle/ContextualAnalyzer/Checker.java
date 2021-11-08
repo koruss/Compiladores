@@ -93,12 +93,14 @@ import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.SyntacticAnalyzer.SourcePosition;
+import java.util.ArrayList;
 
 public final class Checker implements Visitor {
 
@@ -297,20 +299,41 @@ public final class Checker implements Visitor {
 		return ast.type;
 	}
 
+	// Modified to add mutual recursion.
 	public Object visitCallExpression(CallExpression ast, Object o) {
-		Declaration binding = (Declaration) ast.I.visit(this, null);
+		Declaration binding;
+
+		if (o != null) {
+			binding = (Declaration) o;
+		} else {
+			binding = (Declaration) ast.I.visit(this, null);
+		}
+
 		if (binding == null) {
-			reportUndeclared(ast.I);
-			ast.type = StdEnvironment.errorType;
+			if (idTable.getRecursiveDepth() > 0) {
+				idTable.addRecursiveCall(new RecursiveCallExpression(new IdentificationTable(idTable), ast));
+			} else {
+				reportUndeclared(ast.I);
+				ast.type = StdEnvironment.errorType;
+			}
+
 		} else if (binding instanceof FuncDeclaration) {
 			ast.APS.visit(this, ((FuncDeclaration) binding).FPS);
 			ast.type = ((FuncDeclaration) binding).T;
+
+			for (FutureCallExpression fCE : idTable.futureCallExpressions) {
+				if (fCE.getE() == ast) {
+					if (!fCE.getTypeDenoterToCheck().equals(ast.type)) {
+						reporter.reportError("body of function \"%\" has wrong type", ast.I.spelling, ast.position);
+					}
+				}
+			}
+
 		} else if (binding instanceof FuncFormalParameter) {
 			ast.APS.visit(this, ((FuncFormalParameter) binding).FPS);
 			ast.type = ((FuncFormalParameter) binding).T;
 		} else {
-			reporter.reportError("\"%\" is not a function identifier",
-					ast.I.spelling, ast.I.position);
+			reporter.reportError("\"%\" is not a function identifier", ast.I.spelling, ast.I.position);
 		}
 		return ast.type;
 	}
@@ -410,8 +433,20 @@ public final class Checker implements Visitor {
 		}
 		idTable.openScope();
 		ast.FPS.visit(this, null);
+
+		// Extended functionality for mutual recursion
+		visitRecursiveCalls(ast.I);
+
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 		idTable.closeScope();
+
+		// Extended functionality for mutual recursion
+		// If the eType is null, that proc/func needs to be declared in the future.
+		if (eType == null) {
+			idTable.addFutureCallExp(new FutureCallExpression(ast.T, ast.E));
+			return null;
+		}
+
 		if (!ast.T.equals(eType)) {
 			reporter.reportError("body of function \"%\" has wrong type",
 					ast.I.spelling, ast.E.position);
@@ -427,6 +462,10 @@ public final class Checker implements Visitor {
 		}
 		idTable.openScope();
 		ast.FPS.visit(this, null);
+
+		// Extended functionality for mutual recursion
+		visitRecursiveCalls(ast.I);
+
 		ast.C.visit(this, null);
 		idTable.closeScope();
 		return null;
@@ -460,6 +499,18 @@ public final class Checker implements Visitor {
 					ast.I.spelling, ast.position);
 		}
 
+		return null;
+	}
+
+	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o) {
+		//Type inference.
+		ast.T = (TypeDenoter) ast.E.visit(this, null);
+
+		idTable.enter(ast.I.spelling, ast);
+		if (ast.duplicated) {
+			reporter.reportError("identifier \"%\" already declared",
+					ast.I.spelling, ast.position);
+		}
 		return null;
 	}
 
@@ -520,10 +571,24 @@ public final class Checker implements Visitor {
 
 		if (idTable.getRecursiveDepth() == 0 && idTable.recursiveCalls.size() > 0) {
 			reporter.reportError("\"%\" is not a procedure or function identifier",
-					idTable.recursiveCalls.get(0).getProcFuncIdentifier().spelling, 
+					idTable.recursiveCalls.get(0).getProcFuncIdentifier().spelling,
 					idTable.recursiveCalls.get(0).getProcFuncIdentifier().position);
 		}
 		return null;
+	}
+
+	private void visitRecursiveCalls(Identifier I) {
+		ArrayList<RecursiveCall> recursiveCalls = idTable.checkRecursiveCalls(I);
+		IdentificationTable currentIdTable = this.idTable;
+
+		recursiveCalls.stream().map((recCall) -> {
+			Declaration procFuncDecl = (Declaration) recCall.getProcFuncIdentifier().visit(this, null);
+			this.idTable = recCall.getRecIdTable();// Sets the Id Table as how it was in the moment of the call
+			recCall.visitRecursiveCall(this, procFuncDecl);// Visit each of them. Pass the visit of the proc to bind it to the call
+			return recCall;
+		}).forEachOrdered((_item) -> {
+			this.idTable = currentIdTable; // Sets the id table back
+		});
 	}
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o) {
@@ -841,7 +906,13 @@ public final class Checker implements Visitor {
 	}
 
 	public Object visitOperator(Operator O, Object o) {
-		Declaration binding = idTable.retrieve(O.spelling);
+		Declaration binding;
+		// Extensions made to allow mutual recursion.
+		if (o != null) {
+			binding = idTable.retrieve(O.spelling, (Class) o);
+		} else {
+			binding = idTable.retrieve(O.spelling);
+		}
 		if (binding != null) {
 			O.decl = binding;
 		}

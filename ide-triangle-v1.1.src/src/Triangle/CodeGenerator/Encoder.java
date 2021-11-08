@@ -96,6 +96,7 @@ import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
@@ -394,6 +395,11 @@ public final class Encoder implements Visitor {
 		writeTableDetails(ast);
 		return new Integer(extraSize);
 	}
+
+	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o){
+		return null;
+	}
+
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object obj){
 		return null;
 	}

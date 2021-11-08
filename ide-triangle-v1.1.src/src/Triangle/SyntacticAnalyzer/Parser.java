@@ -90,6 +90,7 @@ import Triangle.AbstractSyntaxTrees.UnaryExpression;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Vname;
@@ -884,7 +885,7 @@ public class Parser {
 						acceptIt();
 						Expression eAST = parseExpression();
 						finish(declarationPos);
-						declarationAST = new VarExpDeclaration(iAST, eAST, declarationPos);
+						declarationAST = new VarDeclarationInferred(iAST, eAST, declarationPos);
 					}
 					break;
 				}

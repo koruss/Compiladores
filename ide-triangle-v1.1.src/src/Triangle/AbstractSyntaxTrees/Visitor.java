@@ -84,6 +84,8 @@ public interface Visitor {
 
 	public abstract Object visitVarDeclaration(VarDeclaration ast, Object o);
 
+	public abstract Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o);
+
 	public abstract Object visitRangeVarDecl(RangeVarDecl ast, Object o);
 
 	public abstract Object visitInVarDecl(InVarDecl ast, Object o);

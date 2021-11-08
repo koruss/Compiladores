@@ -75,6 +75,7 @@ import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
@@ -504,6 +505,19 @@ public class XMLVisitor implements Visitor{
 		ast.I.visit(this, null);
 		ast.T.visit(this, null);
 		writeToBuffer("</VarDeclaration>", "\n", true);
+		indentationLevel--;
+
+		return (null);
+	}
+
+	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o) {
+		indentationLevel++;
+		writeToBuffer("<VarDeclarationInferred>", "\n", true);
+		ast.I.visit(this, null);
+		ast.E.visit(this,null);
+		// Type is inferred so it is null, uncommenting will result in NPE.
+		//ast.T.visit(this, null);
+		writeToBuffer("</VarDeclarationInferred>", "\n", true);
 		indentationLevel--;
 
 		return (null);

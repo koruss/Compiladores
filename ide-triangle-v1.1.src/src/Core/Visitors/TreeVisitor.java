@@ -77,6 +77,7 @@ import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
@@ -240,6 +241,10 @@ public class TreeVisitor implements Visitor {
 
 	public Object visitVarDeclaration(VarDeclaration ast, Object obj) {
 		return (createBinary("Variable Declaration", ast.I, ast.T));
+	}
+
+	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o){
+		return (createTernary("Variable Declaration Inferred", ast.I, ast.T, ast.E));
 	}
 
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object obj){

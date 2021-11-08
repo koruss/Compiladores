@@ -76,6 +76,7 @@ import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.VarActualParameter;
 import Triangle.AbstractSyntaxTrees.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.VarDeclarationInferred;
 import Triangle.AbstractSyntaxTrees.VarExpDeclaration;
 import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
@@ -381,6 +382,10 @@ public class TableVisitor implements Visitor {
 		}
 
 		ast.T.visit(this, null);
+		return (null);
+	}
+
+	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o){
 		return (null);
 	}
 
