@@ -213,6 +213,7 @@ public final class Checker implements Visitor {
 
 	//NEW
 	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object obj) {
+		idTable.openScope();
 		ast.rangeVar.visit(this, null);
 		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 		if (!eType.equals(StdEnvironment.integerType)) {
@@ -220,11 +221,13 @@ public final class Checker implements Visitor {
 					ast.E.position);
 		}
 		ast.C.visit(this, null);
+		idTable.closeScope();
 		return null;
 	}
 
 	//NEW
 	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj) {
+		idTable.openScope();
 		ast.rangeVar.visit(this, null);
 		TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
 		if (!e1Type.equals(StdEnvironment.integerType)) {
@@ -238,11 +241,13 @@ public final class Checker implements Visitor {
 		if (!e2Type.equals(StdEnvironment.booleanType)) {
 			reporter.reportError("Boolean expression expected here", "", ast.E2.position);
 		}
+		idTable.closeScope();
 		return null;
 	}
 
 	//NEW
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
+		idTable.openScope();
 		ast.rangeVar.visit(this, null);
 		TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
 		if (!e1Type.equals(StdEnvironment.integerType)) {
@@ -256,13 +261,16 @@ public final class Checker implements Visitor {
 		if (!e2Type.equals(StdEnvironment.booleanType)) {
 			reporter.reportError("Boolean expression expected here", "", ast.E2.position);
 		}
+		idTable.closeScope();
 		return null;
 	}
 
 	//NEW
 	public Object visitRepeatInCommand(RepeatInCommand ast, Object obj) {
+		idTable.openScope();
 		ast.inVar.visit(this, null);
 		ast.C.visit(this, null);
+		idTable.closeScope();
 		return null;
 	}
 
@@ -564,6 +572,7 @@ public final class Checker implements Visitor {
 			reporter.reportError("identifier \"%\" already declared",
 					ast.I.spelling, ast.position);
 		}
+		Declaration binding = (Declaration) ast.I.visit(this, null);
 		return null;
 	}
 
@@ -730,7 +739,13 @@ public final class Checker implements Visitor {
     if (eType == null) {
       idTable.addFutureCallExp(new FutureCallExpression(((ConstFormalParameter) fp).T, ast.E));
       return null;
-    }
+    } 
+	
+	// If the eType is an ArrayTypeDenoter the type of the array's elements must
+	// be extracted in order to validate it correctly with the FormalParameter.
+	else if (eType instanceof ArrayTypeDenoter){
+		eType = ((ArrayTypeDenoter) eType).T; 
+	}
 
     if (!(fp instanceof ConstFormalParameter))
       reporter.reportError("const actual parameter not expected here", "", ast.position);
@@ -990,7 +1005,14 @@ public final class Checker implements Visitor {
 		} else if (binding instanceof VarFormalParameter) {
 			ast.type = ((VarFormalParameter) binding).T;
 			ast.variable = true;
-		} else {
+		} else if (binding instanceof InVarDecl) {
+			ast.type = ((InVarDecl) binding).E.type;
+			ast.variable = true;
+		}else if (binding instanceof RangeVarDecl) {
+			ast.type = ((RangeVarDecl) binding).E.type;
+			ast.variable = false;
+		} 
+		else {
 			reporter.reportError("\"%\" is not a const or var identifier",
 					ast.I.spelling, ast.I.position);
 		}
