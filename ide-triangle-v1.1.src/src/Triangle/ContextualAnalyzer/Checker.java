@@ -118,18 +118,28 @@ public final class Checker implements Visitor {
 		return null;
 	}
 
+	//Extension made for mutual recursion.
 	public Object visitCallCommand(CallCommand ast, Object o) {
+		Declaration binding;
 
-		Declaration binding = (Declaration) ast.I.visit(this, null);
+		if (o != null) {
+			binding = (Declaration) o;
+		} else {
+			binding = (Declaration) ast.I.visit(this, null);
+		}
+
 		if (binding == null) {
-			reportUndeclared(ast.I);
+			if (idTable.getRecursiveDepth() > 0) {
+				idTable.addRecursiveCall(new RecursiveCallCommand(new IdentificationTable(idTable), ast));
+			} else {
+				reportUndeclared(ast.I);
+			}
 		} else if (binding instanceof ProcDeclaration) {
 			ast.APS.visit(this, ((ProcDeclaration) binding).FPS);
 		} else if (binding instanceof ProcFormalParameter) {
 			ast.APS.visit(this, ((ProcFormalParameter) binding).FPS);
 		} else {
-			reporter.reportError("\"%\" is not a procedure identifier",
-					ast.I.spelling, ast.I.position);
+			reporter.reportError("\"%\" is not a procedure identifier", ast.I.spelling, ast.I.position);
 		}
 		return null;
 	}
@@ -335,7 +345,13 @@ public final class Checker implements Visitor {
 		} else {
 			reporter.reportError("\"%\" is not a function identifier", ast.I.spelling, ast.I.position);
 		}
-		return ast.type;
+
+		if(ast.type == null){
+			return StdEnvironment.errorType;
+		}
+		else{
+			return ast.type;
+		}
 	}
 
 	public Object visitCharacterExpression(CharacterExpression ast, Object o) {
@@ -706,19 +722,22 @@ public final class Checker implements Visitor {
 
 	// Actual Parameters
 	// Always returns null. Uses the given FormalParameter.
-	public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
-		FormalParameter fp = (FormalParameter) o;
-		TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+  public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
+    FormalParameter fp = (FormalParameter) o;
+    TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 
-		if (!(fp instanceof ConstFormalParameter)) {
-			reporter.reportError("const actual parameter not expected here", "",
-					ast.position);
-		} else if (!eType.equals(((ConstFormalParameter) fp).T)) {
-			reporter.reportError("wrong type for const actual parameter", "",
-					ast.E.position);
-		}
-		return null;
-	}
+	// Placed future call while the true call is revealed.
+    if (eType == null) {
+      idTable.addFutureCallExp(new FutureCallExpression(((ConstFormalParameter) fp).T, ast.E));
+      return null;
+    }
+
+    if (!(fp instanceof ConstFormalParameter))
+      reporter.reportError("const actual parameter not expected here", "", ast.position);
+    else if (!eType.equals(((ConstFormalParameter) fp).T))
+      reporter.reportError("wrong type for const actual parameter", "", ast.E.position);
+    return null;
+  }
 
 	public Object visitFuncActualParameter(FuncActualParameter ast, Object o) {
 		FormalParameter fp = (FormalParameter) o;

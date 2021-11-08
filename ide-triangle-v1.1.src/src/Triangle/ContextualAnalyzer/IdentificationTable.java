@@ -178,8 +178,8 @@ public final class IdentificationTable {
 		return attr;
 	}
 
-	public void addRecursiveCall(RecursiveCall pendingCall) {
-		recursiveCalls.add(pendingCall);
+	public void addRecursiveCall(RecursiveCall p_recCall) {
+		recursiveCalls.add(p_recCall);
 	}
 
 	public void addFutureCallExp(FutureCallExpression ast) {
@@ -195,7 +195,8 @@ public final class IdentificationTable {
 
 		for (RecursiveCall c : recursiveCalls) //Check if the call's level is deeper than the level of the declaration.
 		{
-			if (c.getLevel() > declLevel && c.getProcFuncIdentifier().equals(pfId)) {
+			// Regular equals wasn't working, so we used spelling.equals.
+			if (c.getLevel() > declLevel && c.getProcFuncIdentifier().spelling.equals(pfId.spelling)) {
 				toVisit.add(c);
 			}
 		}
