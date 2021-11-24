@@ -8,9 +8,9 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
  */
 public class RepeatForRangeCommand extends Command {
 
-	public RangeVarDecl rangeVar;
-	public Expression E;
-	public Command C;
+	public RangeVarDecl rangeVar; // The range declaration required to iterate.
+	public Expression E; // This is the expression that halts the entire loop command.
+	public Command C; // The standard command contained in the loop.
 
 	public RepeatForRangeCommand(RangeVarDecl _range, Expression _exp, Command _cmd, SourcePosition thePosition) {
 		super(thePosition);

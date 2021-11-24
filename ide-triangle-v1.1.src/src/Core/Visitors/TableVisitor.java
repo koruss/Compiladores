@@ -181,7 +181,7 @@ public class TableVisitor implements Visitor {
 	public Object visitRepeatForRangeCommand(RepeatForRangeCommand ast, Object o){
 		ast.E.visit(this, null);
 		ast.C.visit(this, null);
-		ast.rangeVar.visit(null, null);
+		ast.rangeVar.visit(this, null);
 
 		return (null);
 		
@@ -390,18 +390,29 @@ public class TableVisitor implements Visitor {
 	}
 
 	public Object visitRangeVarDecl(RangeVarDecl ast, Object o){
+		String name = ast.I.spelling;
+		String type = "N/A";
 		try {
-			addIdentifier(ast.I.spelling,
-				"KnownAddress",
-				(ast.entity != null ? ast.entity.size : 0),
-				((KnownAddress) ast.entity).address.level,
-				((KnownAddress) ast.entity).address.displacement,
-				-1);
+			int size = (ast.entity != null ? ast.entity.size : 0);
+			int level = -1;
+			int displacement = -1;
+			int value = -1;
+
+			if (ast.entity instanceof KnownValue) {
+				type = "KnownValue";
+				value = ((KnownValue) ast.entity).value;
+			} else if (ast.entity instanceof UnknownValue) {
+				type = "UnknownValue";
+				level = ((UnknownValue) ast.entity).address.level;
+				displacement = ((UnknownValue) ast.entity).address.displacement;
+			}
+			addIdentifier(name, type, size, level, displacement, value);
 		} catch (NullPointerException e) {
 		}
 
-		ast.I.visit(this, null);
 		ast.E.visit(this, null);
+		ast.I.visit(this, null);
+
 		return (null);
 	}
 
