@@ -266,38 +266,38 @@ public final class Encoder implements Visitor {
 
 		int jmpAddr, loopAddr;
 		jmpAddr = nextInstrAddr;
+		//ALEXA TAMOS BIEN
 		emit(Machine.JUMPop, 0, Machine.SBr, 0);
 		loopAddr = nextInstrAddr;
+
+		// While validation.
+		ast.E2.type.visit(this, frame);
+		emit(Machine.JUMPIFop, 0, 0, 0);
+		//emit(Machine.HALTop,0,0,0);
+
 		ast.C.visit(this, frame);
 
 		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);//Increase value of control
 
-		patch(jmpAddr, nextInstrAddr);//patch incomplete jump
+		patch(jmpAddr, nextInstrAddr); //patch incomplete jump
 
-		//Load initial Expression Value
-		emit(Machine.LOADop, 1, Machine.STr, -1);
-		//Load halting Expression Value
-		emit(Machine.LOADop, 1, Machine.STr, -3);
-		//call "lower or equal than" operation, Check initial <= halting
-		emit(Machine.CALLop, 0, Machine.PBr, Machine.leDisplacement);
-		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);//Conditional jump
+		// Regular for validation.
+		// Load initial Expression value from the stack.
+		//emit(Machine.LOADop, 1, Machine.STr, -1);
+		// Load halting Expression value from the stack.
+		//emit(Machine.LOADop, 1, Machine.STr, -3);
+		emit(Machine.LOADop, 2, Machine.STr, -2);
+		//Call "lower or equal than" operation based on the last two results.
+		emit(Machine.CALLop, 1, Machine.PBr, Machine.geDisplacement);
+		// Jump if the previous condition is met.
+		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);
 
 		// Pop the space for the halting and initial expressions
 		emit(Machine.POPop, 0, 0, minLoopRange + maxLoopRange);
 
 		return null;
 
-		//Frame frame = (Frame) o;
-		//int jumpAddr, loopAddr;
-
-		//jumpAddr = nextInstrAddr;
-		//emit(Machine.JUMPop, 0, Machine.CBr, 0);
-		//loopAddr = nextInstrAddr;
-		//ast.C.visit(this, frame);
-		//patch(jumpAddr, nextInstrAddr);
-		//ast.E.visit(this, frame);
-		//emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
-		//return null;
+		//La condición del while se evalúa cuando i (en este caso) está entre el valor de k (al inicial el repeat for, que es 1) y 10 (que es una literal entera). Una vez que i adquiere valor por primera vez, o después de haber sido actualizada, se evalúa i < 3. Si es verdadera, se procede a hacer comando subordinado, si es falsa, termina la repetición.
 	}
 
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
@@ -308,7 +308,7 @@ public final class Encoder implements Visitor {
 		return null;
 	}
 
-	// Expressions
+	//<editor-fold defaultstate="collapsed" desc="Expressions">
 	public Object visitArrayExpression(ArrayExpression ast, Object o) {
 		ast.type.visit(this, null);
 		return ast.AA.visit(this, o);
@@ -402,7 +402,8 @@ public final class Encoder implements Visitor {
 		return valSize;
 	}
 
-	// Declarations
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Declarations">
 	public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast,
 			Object o) {
 		return new Integer(0);
@@ -508,10 +509,8 @@ public final class Encoder implements Visitor {
 	public Object visitVarDeclarationInferred(VarDeclarationInferred ast, Object o) {
 		Frame frame = (Frame) o;
 
-		// Get extra space for the inferred declaration.
 		int extraSize = (Integer) ast.E.visit(this, frame);
 
-		// In case the expression is a char.
 		if (ast.E instanceof CharacterExpression) {
 			CharacterLiteral CL = ((CharacterExpression) ast.E).CL;
 			ast.entity = new KnownAddressWithValue(Machine.addressSize,
@@ -520,7 +519,6 @@ public final class Encoder implements Visitor {
 					characterValuation(CL.spelling)
 			);
 
-			// In case the expression is an int.
 		} else if (ast.E instanceof IntegerExpression) {
 			IntegerLiteral IL = ((IntegerExpression) ast.E).IL;
 			ast.entity = new KnownAddressWithValue(Machine.addressSize,
@@ -566,16 +564,38 @@ public final class Encoder implements Visitor {
 	}
 
 	public Object visitLocalDeclaration(LocalDeclaration ast, Object o) {
-		return (null);
+		Frame frame = (Frame) o;
+
+		int extraSize1, extraSize2;
+
+		extraSize1 = ((Integer) ast.D1.visit(this, frame));
+		Frame frame1 = new Frame(frame, extraSize1);
+		extraSize2 = ((Integer) ast.D2.visit(this, frame1));
+		return extraSize1 + extraSize2;
 	}
 
 	public Object visitRecursiveDeclaration(RecursiveDeclaration ast, Object o) {
-		return null;
+		Frame frame = (Frame) o;
+
+		//Store the instruction address at the start of the encoding of the recursive decl.
+		int currentInstrAddress = nextInstrAddr;
+
+		//First pass. This pass sets the declarations entrance addresses and emits instruction placeholders for future calls
+		ast.D.visit(this, frame);
+
+		//Reset the instruction address to start the second pass
+		nextInstrAddr = currentInstrAddress;
+
+		//Second pass. Emits the actual instructions by replacing the placeholders
+		Integer extraSize = (Integer) ast.D.visit(this, frame);
+
+		return extraSize;
 	}
 
 	public Object visitMultipleProcDeclaration(MultipleProcDeclaration ast, Object o) {
 		return (null);
 	}
+	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc=" Cases ">
 	// Cases
@@ -584,6 +604,7 @@ public final class Encoder implements Visitor {
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Aggregates">
 	// Array Aggregates
 	public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast,
 			Object o) {
@@ -612,7 +633,9 @@ public final class Encoder implements Visitor {
 			Object o) {
 		return ast.E.visit(this, o);
 	}
+	// </editor-fold>
 
+	// <editor-fold defaultstate="collapsed" desc="Parameters">
 	// Formal Parameters
 	public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
 		Frame frame = (Frame) o;
@@ -736,7 +759,9 @@ public final class Encoder implements Visitor {
 			SingleActualParameterSequence ast, Object o) {
 		return ast.AP.visit(this, o);
 	}
+	// </editor-fold>
 
+	// <editor-fold defaultstate="collapsed" desc="Type Denoters / Variables">
 	// Type Denoters
 	public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
 		return new Integer(0);
@@ -841,7 +866,12 @@ public final class Encoder implements Visitor {
 
 	public Object visitIdentifier(Identifier ast, Object o) {
 		Frame frame = (Frame) o;
-		if (ast.decl.entity instanceof KnownRoutine) {
+
+		//Declaration is null, it hasn't been visited yet
+		if (ast.decl.entity == null) //Add to pending calls. Need to store: frame's level, I ast
+		{
+			emit(Machine.CALLop, 0, Machine.CBr, 0); //Emit the instruction, but needs to be patched later
+		} else if (ast.decl.entity instanceof KnownRoutine) {
 			ObjectAddress address = ((KnownRoutine) ast.decl.entity).address;
 			emit(Machine.CALLop, displayRegister(frame.level, address.level),
 					Machine.CBr, address.displacement);

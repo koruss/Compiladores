@@ -191,7 +191,7 @@ public class TableVisitor implements Visitor {
 		ast.C.visit(this, null);
 		ast.E1.visit(this, null);
 		ast.E2.visit(this, null);
-		ast.rangeVar.visit(null, null);
+		ast.rangeVar.visit(this, null);
 
 		return (null);
 		
@@ -201,7 +201,7 @@ public class TableVisitor implements Visitor {
 		ast.C.visit(this, null);
 		ast.E1.visit(this, null);
 		ast.E2.visit(this, null);
-		ast.rangeVar.visit(null, null);
+		ast.rangeVar.visit(this, null);
 
 		return (null);
 		
