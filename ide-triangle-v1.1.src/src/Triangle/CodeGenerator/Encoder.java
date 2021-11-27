@@ -106,6 +106,7 @@ import Triangle.AbstractSyntaxTrees.WhileCommand;
 
 public final class Encoder implements Visitor {
 
+	// <editor-fold defaultstate="collapsed" desc=" Commands ">
 	// Commands
 	public Object visitAssignCommand(AssignCommand ast, Object o) {
 		Frame frame = (Frame) o;
@@ -249,6 +250,7 @@ public final class Encoder implements Visitor {
 		return null;
 	}
 
+	// Extension to original Triangle.
 	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj) {
 		Frame frame = (Frame) obj;
 
@@ -270,10 +272,11 @@ public final class Encoder implements Visitor {
 		emit(Machine.JUMPop, 0, Machine.SBr, 0);
 		loopAddr = nextInstrAddr;
 
-		// While validation.
-		ast.E2.type.visit(this, frame);
-		emit(Machine.JUMPIFop, 0, 0, 0);
-		//emit(Machine.HALTop,0,0,0);
+		// Evaluate the while expression.
+		ast.E2.visit(this, frame);
+		emit(Machine.JUMPIFop, 0, Machine.SBr, loopAddr + 7);
+		// loopAddr+7 bypasses the while expression. Effectively acting as a high level 'break'.
+		// However if the ast.C has too many commands inside of it, it will not work.
 
 		ast.C.visit(this, frame);
 
@@ -301,6 +304,52 @@ public final class Encoder implements Visitor {
 	}
 
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
+		Frame frame = (Frame) obj;
+
+		// Get the first expression in the loop.
+		// This expression may or may not halt the loop.
+		int maxLoopRange = (Integer) ast.E1.visit(this, frame);
+		// Recreate the frame with the maxLoopRange.
+		frame = new Frame(frame, maxLoopRange);
+
+		// Load the initial loop range value.
+		int minLoopRange = (Integer) ast.rangeVar.E.visit(this, frame);
+		ast.rangeVar.entity = new UnknownValue(minLoopRange, frame.level, frame.size);
+		// Recreate the frame with the minLoopRange.
+		frame = new Frame(frame, minLoopRange);
+
+		int jmpAddr, loopAddr;
+		jmpAddr = nextInstrAddr;
+		//ALEXA TAMOS BIEN
+		emit(Machine.JUMPop, 0, Machine.SBr, 0);
+		loopAddr = nextInstrAddr;
+
+		// Evaluate the while expression.
+		ast.E2.visit(this, frame);
+		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr + 7);
+		// loopAddr+7 bypasses the while expression. Effectively acting as a high level 'break'.
+		// However if the ast.C has too many commands inside of it, it will not work.
+
+		ast.C.visit(this, frame);
+
+		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);//Increase value of control
+
+		patch(jmpAddr, nextInstrAddr); //patch incomplete jump
+
+		// Regular for validation.
+		// Load initial Expression value from the stack.
+		//emit(Machine.LOADop, 1, Machine.STr, -1);
+		// Load halting Expression value from the stack.
+		//emit(Machine.LOADop, 1, Machine.STr, -3);
+		emit(Machine.LOADop, 2, Machine.STr, -2);
+		//Call "lower or equal than" operation based on the last two results.
+		emit(Machine.CALLop, 1, Machine.PBr, Machine.geDisplacement);
+		// Jump if the previous condition is met.
+		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);
+
+		// Pop the space for the halting and initial expressions
+		emit(Machine.POPop, 0, 0, minLoopRange + maxLoopRange);
+
 		return null;
 	}
 
@@ -308,6 +357,7 @@ public final class Encoder implements Visitor {
 		return null;
 	}
 
+	// </editor-fold>
 	//<editor-fold defaultstate="collapsed" desc="Expressions">
 	public Object visitArrayExpression(ArrayExpression ast, Object o) {
 		ast.type.visit(this, null);
@@ -859,6 +909,8 @@ public final class Encoder implements Visitor {
 		return new Integer(fieldSize);
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc=" Literals, Identifiers and Operators ">
 	// Literals, Identifiers and Operators
 	public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
 		return null;
@@ -921,6 +973,8 @@ public final class Encoder implements Visitor {
 		return null;
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc=" Value-or-variable names ">
 	// Value-or-variable names
 	public Object visitDotVname(DotVname ast, Object o) {
 		Frame frame = (Frame) o;
@@ -969,6 +1023,8 @@ public final class Encoder implements Visitor {
 		return baseObject;
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc=" Programs, env, and more ">
 	// Programs
 	public Object visitProgram(Program ast, Object o) {
 		return ast.C.visit(this, o);
@@ -1250,3 +1306,5 @@ public final class Encoder implements Visitor {
 		}
 	}
 }
+
+	// </editor-fold>
