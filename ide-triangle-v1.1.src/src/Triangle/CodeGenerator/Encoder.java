@@ -103,6 +103,7 @@ import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Vname;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
+import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public final class Encoder implements Visitor {
 
@@ -999,16 +1000,24 @@ public final class Encoder implements Visitor {
 		baseObject = (RuntimeEntity) ast.V.visit(this, frame);
 		ast.offset = ast.V.offset;
 		ast.indexed = ast.V.indexed;
-		elemSize = ((Integer) ast.type.visit(this, null)).intValue();
+		elemSize = ((Integer) ast.type.visit(this, null));
 		if (ast.E instanceof IntegerExpression) {
 			IntegerLiteral IL = ((IntegerExpression) ast.E).IL;
-			ast.offset = ast.offset + Integer.parseInt(IL.spelling) * elemSize;
+			int index = Integer.parseInt(IL.spelling);
+			emit(Machine.LOADLop, 0, 0, ast.V.offset + index * elemSize); //Index
+			emit(Machine.LOADLop, 0, 0, ast.V.offset); // Lower Bound
+			emit(Machine.LOADLop, 0, 0, ast.V.type.entity.size); // Upper bound
+
+			// Check its bounds
+			emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.idxchkDisplacement);
+			// Keep on generating code
+			ast.offset = ast.offset + index * elemSize;
 		} else {
 			// v-name is indexed by a proper expression, not a literal
 			if (ast.indexed) {
 				frame.size = frame.size + Machine.integerSize;
 			}
-			indexSize = ((Integer) ast.E.visit(this, frame)).intValue();
+			indexSize = ((Integer) ast.E.visit(this, frame));
 			if (elemSize != 1) {
 				emit(Machine.LOADLop, 0, 0, elemSize);
 				emit(Machine.CALLop, Machine.SBr, Machine.PBr,
@@ -1108,6 +1117,22 @@ public final class Encoder implements Visitor {
 		elaborateStdPrimRoutine(StdEnvironment.puteolDecl, Machine.puteolDisplacement);
 		elaborateStdEqRoutine(StdEnvironment.equalDecl, Machine.eqDisplacement);
 		elaborateStdEqRoutine(StdEnvironment.unequalDecl, Machine.neDisplacement);
+
+		Identifier tmpIdentifier = new Identifier("", new SourcePosition());
+		SourcePosition tmpPosition = new SourcePosition();
+
+		StdEnvironment.idxchkDecl = new ProcDeclaration(new Identifier("indexCheck", tmpPosition),
+				new MultipleFormalParameterSequence(new ConstFormalParameter(tmpIdentifier, StdEnvironment.integerType, tmpPosition),
+						new MultipleFormalParameterSequence(new ConstFormalParameter(tmpIdentifier, StdEnvironment.integerType, tmpPosition),
+								new SingleFormalParameterSequence(new ConstFormalParameter(tmpIdentifier, StdEnvironment.integerType, tmpPosition),
+										tmpPosition),
+								tmpPosition),
+						tmpPosition),
+				new EmptyCommand(tmpPosition),
+				tmpPosition
+		);
+
+		elaborateStdPrimRoutine(StdEnvironment.idxchkDecl, Machine.idxchkDisplacement);
 	}
 
 	// Saves the object program in the named file.
@@ -1205,7 +1230,31 @@ public final class Encoder implements Visitor {
 		}
 		if (baseObject instanceof KnownAddress) {
 			ObjectAddress address = ((KnownAddress) baseObject).address;
+
 			if (V.indexed) {
+				emit(Machine.LOADop, 1, Machine.STr, -1);
+
+				// Push the base adress to the stack top
+				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
+						address.displacement + V.offset);
+
+				// Add leaves index at the stack top
+				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+
+				// Pushes lower bound
+				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
+						address.displacement + V.offset);
+
+				// Pushes upper bound
+				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
+						address.displacement + V.offset);
+				// Load the size
+				emit(Machine.LOADLop, 0, 0, ((SubscriptVname) V).V.type.entity.size);
+				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+
+				// Check index
+				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.idxchkDisplacement);
+
 				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
 						address.displacement + V.offset);
 				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
@@ -1253,9 +1302,35 @@ public final class Encoder implements Visitor {
 					? ((UnknownValue) baseObject).address
 					: ((KnownAddress) baseObject).address;
 			if (V.indexed) {
+				emit(Machine.LOADop, 1, Machine.STr, -1);
+
+				// Push the base adress to the stack top
 				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
 						address.displacement + V.offset);
+
+				// Add leaves index at the stack top
 				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+
+				// Pushes lower bound
+				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
+						address.displacement + V.offset);
+
+				// Pushes upper bound
+				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
+						address.displacement + V.offset);
+				// Load the size
+				emit(Machine.LOADLop, 0, 0, ((SubscriptVname) V).V.type.entity.size); 
+				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+
+				// Check index
+				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.idxchkDisplacement);
+
+				// Push the base adress to the stack top
+				emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
+						address.displacement + V.offset);
+				// Add the just pushed address with the displacement
+				emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+				// Load target value
 				emit(Machine.LOADIop, valSize, 0, 0);
 			} else {
 				emit(Machine.LOADop, valSize, displayRegister(frame.level,
