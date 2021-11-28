@@ -255,8 +255,7 @@ public final class Encoder implements Visitor {
 	public Object visitRepeatForRangeWhileCommand(RepeatForRangeWhileCommand ast, Object obj) {
 		Frame frame = (Frame) obj;
 
-		// Get the first expression in the loop.
-		// This expression may or may not halt the loop.
+		// Get the first expression of the loop.
 		int maxLoopRange = (Integer) ast.E1.visit(this, frame);
 		// Recreate the frame with the maxLoopRange.
 		frame = new Frame(frame, maxLoopRange);
@@ -267,31 +266,35 @@ public final class Encoder implements Visitor {
 		// Recreate the frame with the minLoopRange.
 		frame = new Frame(frame, minLoopRange);
 
-		int jmpAddr, loopAddr;
+		int jmpAddr, loopAddr, whileAddr = 0;
 		jmpAddr = nextInstrAddr;
-		//ALEXA TAMOS BIEN
+		//Emit the jump address.
 		emit(Machine.JUMPop, 0, Machine.SBr, 0);
 		loopAddr = nextInstrAddr;
 
 		// Evaluate the while expression.
 		ast.E2.visit(this, frame);
-		emit(Machine.JUMPIFop, 0, Machine.SBr, loopAddr + 7);
-		// loopAddr+7 bypasses the while expression. Effectively acting as a high level 'break'.
-		// However if the ast.C has too many commands inside of it, it will not work.
+		// Set the while expression's address in memory for future backpatching.
+		whileAddr = nextInstrAddr;
+		// Emit the jump when the while condition stops being true.
+		emit(Machine.JUMPIFop, 0, Machine.SBr, whileAddr);
 
+		// Visit the internal command.
 		ast.C.visit(this, frame);
 
-		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);//Increase value of control
+		// Patch the while jump address. This takes in to account the future
+		// 4 emits, which guarantees that the jump will land in the POPop.
+		patch(whileAddr, nextInstrAddr + 4);
 
-		patch(jmpAddr, nextInstrAddr); //patch incomplete jump
+		// Increase the value of the control variable.
+		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);
 
-		// Regular for validation.
-		// Load initial Expression value from the stack.
-		//emit(Machine.LOADop, 1, Machine.STr, -1);
-		// Load halting Expression value from the stack.
-		//emit(Machine.LOADop, 1, Machine.STr, -3);
+		// Patch the jump address.	
+		patch(jmpAddr, nextInstrAddr); 
+
+		// Load the last two elements from the stack top.
 		emit(Machine.LOADop, 2, Machine.STr, -2);
-		//Call "lower or equal than" operation based on the last two results.
+		// Make a "greater or equals" comparison of the last two elements.
 		emit(Machine.CALLop, 1, Machine.PBr, Machine.geDisplacement);
 		// Jump if the previous condition is met.
 		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);
@@ -300,15 +303,12 @@ public final class Encoder implements Visitor {
 		emit(Machine.POPop, 0, 0, minLoopRange + maxLoopRange);
 
 		return null;
-
-		//La condición del while se evalúa cuando i (en este caso) está entre el valor de k (al inicial el repeat for, que es 1) y 10 (que es una literal entera). Una vez que i adquiere valor por primera vez, o después de haber sido actualizada, se evalúa i < 3. Si es verdadera, se procede a hacer comando subordinado, si es falsa, termina la repetición.
 	}
 
 	public Object visitRepeatForRangeUntilCommand(RepeatForRangeUntilCommand ast, Object obj) {
 		Frame frame = (Frame) obj;
 
-		// Get the first expression in the loop.
-		// This expression may or may not halt the loop.
+		// Get the first expression of the loop.
 		int maxLoopRange = (Integer) ast.E1.visit(this, frame);
 		// Recreate the frame with the maxLoopRange.
 		frame = new Frame(frame, maxLoopRange);
@@ -319,31 +319,35 @@ public final class Encoder implements Visitor {
 		// Recreate the frame with the minLoopRange.
 		frame = new Frame(frame, minLoopRange);
 
-		int jmpAddr, loopAddr;
+		int jmpAddr, loopAddr, untilAddr = 0;
 		jmpAddr = nextInstrAddr;
-		//ALEXA TAMOS BIEN
+		//Emit the jump address.
 		emit(Machine.JUMPop, 0, Machine.SBr, 0);
 		loopAddr = nextInstrAddr;
 
 		// Evaluate the while expression.
 		ast.E2.visit(this, frame);
-		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr + 7);
-		// loopAddr+7 bypasses the while expression. Effectively acting as a high level 'break'.
-		// However if the ast.C has too many commands inside of it, it will not work.
+		// Set the until expression's address in memory for future backpatching.
+		untilAddr = nextInstrAddr;
+		// Emit the jump when the until condition starts being true.
+		emit(Machine.JUMPIFop, 1, Machine.SBr, untilAddr);
 
+		// Visit the internal command.
 		ast.C.visit(this, frame);
 
-		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);//Increase value of control
+		// Patch the until jump address. This takes in to account the future
+		// 4 emits, which guarantees that the jump will land in the POPop.
+		patch(untilAddr, nextInstrAddr + 4);
 
-		patch(jmpAddr, nextInstrAddr); //patch incomplete jump
+		// Increase the value of the control variable.
+		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);
 
-		// Regular for validation.
-		// Load initial Expression value from the stack.
-		//emit(Machine.LOADop, 1, Machine.STr, -1);
-		// Load halting Expression value from the stack.
-		//emit(Machine.LOADop, 1, Machine.STr, -3);
+		// Patch the jump address.	
+		patch(jmpAddr, nextInstrAddr); 
+
+		// Load the last two elements from the stack top.
 		emit(Machine.LOADop, 2, Machine.STr, -2);
-		//Call "lower or equal than" operation based on the last two results.
+		// Make a "greater or equals" comparison of the last two elements.
 		emit(Machine.CALLop, 1, Machine.PBr, Machine.geDisplacement);
 		// Jump if the previous condition is met.
 		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);
@@ -355,6 +359,33 @@ public final class Encoder implements Visitor {
 	}
 
 	public Object visitRepeatInCommand(RepeatInCommand ast, Object obj) {
+		Frame frame = (Frame) obj;
+
+		int jmpAddr, loopAddr, maxIdxAddr, minIdxAddr = nextInstrAddr - 1; 
+
+		// First load the onto the stack. 
+		ast.inVar.E.visit(this, frame);
+
+		maxIdxAddr = nextInstrAddr - 1;
+		jmpAddr = nextInstrAddr;
+		emit(Machine.JUMPop, 0, Machine.SBr, 0);
+		loopAddr= nextInstrAddr;
+
+		ast.C.visit(this, frame);
+
+		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);//Increase value of control
+
+		patch(jmpAddr, nextInstrAddr); //patch incomplete jump
+
+
+		emit(Machine.LOADop, 2, Machine.STr, -2);
+		emit(Machine.CALLop, 1, Machine.PBr, Machine.geDisplacement);
+		// Jump if the previous condition is met.
+		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);
+
+		// Pop the space for the halting and initial expressions
+		emit(Machine.POPop, 0, 0, minIdxAddr + maxIdxAddr);
+
 		return null;
 	}
 
