@@ -361,35 +361,81 @@ public final class Encoder implements Visitor {
 	public Object visitRepeatInCommand(RepeatInCommand ast, Object obj) {
 		Frame frame = (Frame) obj;
 
-		int jmpAddr, loopAddr, maxIdxAddr, minIdxAddr = nextInstrAddr - 1; 
+		int ctrlVarAddr, loopAddr, maxIdxAddr, minIdxAddr = nextInstrAddr; 
+		int conditionAddr, currentIdxAddr;
+		// Variable where the array type size will be stored.
+		int extraSize;
 
-		// First load the onto the stack. 
+		// Load the array onto the stack. 
 		ast.inVar.E.visit(this, frame);
-
 		maxIdxAddr = nextInstrAddr - 1;
-		jmpAddr = nextInstrAddr;
-		emit(Machine.JUMPop, 0, Machine.SBr, 0);
+		//// Recreate the frame with the maxIdxAddr.
+		frame = new Frame(frame, maxIdxAddr);
+
+		// Get the intended variable size.
+		extraSize = ((Integer) ast.inVar.T.visit(this, null)).intValue();
+
+		// Emit the variable where the current index for the array walkthrough
+		// will be stored.
+		currentIdxAddr = nextInstrAddr;
+		emit(Machine.PUSHop, 0, 0, extraSize);
+		ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+		
+		// Emit the control variable.
+		ctrlVarAddr = nextInstrAddr;
+		emit(Machine.PUSHop, 0, 0, extraSize);
+		ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+
+		// Recreate the frame with the minIdxAddr.
+		frame = new Frame(frame, minIdxAddr);
+
+		// Store the minIdxAddr inside the ctrlVar.
+		emit(Machine.LOADLop, extraSize, Machine.SBr, minIdxAddr);
+		emit(Machine.STOREop, extraSize, Machine.SBr, ctrlVarAddr);
+
+		conditionAddr = nextInstrAddr;
+
+		// Jump to the conditionAddr at the start of execution.
+		emit(Machine.JUMPop, extraSize, Machine.CBr, conditionAddr);
+
 		loopAddr= nextInstrAddr;
+
+		// Add an extraSize to the ctrlVarAddr.
+		emit(Machine.LOADop, extraSize, Machine.SBr, ctrlVarAddr);
+		emit(Machine.LOADAop, extraSize, Machine.SBr, minIdxAddr);
+		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+
+		// Store the extraSize in the currentIdxAddr.
+		emit(Machine.LOADIop, extraSize, Machine.SBr, extraSize);
+		emit(Machine.STOREop, extraSize, Machine.SBr, currentIdxAddr);
+		emit(Machine.LOADop, extraSize, Machine.SBr, currentIdxAddr);
 
 		ast.C.visit(this, frame);
 
-		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);//Increase value of control
+		// Add 1 to the ctrlVarAddr.
+		emit(Machine.LOADop, extraSize, Machine.SBr, ctrlVarAddr);
+		emit(Machine.LOADLop, extraSize, Machine.SBr, 1);
+		emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
+		emit(Machine.STOREop, extraSize, Machine.SBr, ctrlVarAddr);
 
-		patch(jmpAddr, nextInstrAddr); //patch incomplete jump
-
-
-		emit(Machine.LOADop, 2, Machine.STr, -2);
-		emit(Machine.CALLop, 1, Machine.PBr, Machine.geDisplacement);
+		// Backpatch the conditionAddr so the condition can be validated at the
+		// start of the execution.
+		patch(conditionAddr, nextInstrAddr);
+		// Check if the loop condition is true.
+		emit(Machine.LOADop, extraSize, Machine.SBr, ctrlVarAddr);
+		emit(Machine.LOADLop, extraSize, Machine.SBr, maxIdxAddr);
+		emit(Machine.CALLop, 1, Machine.PBr, Machine.leDisplacement);
 		// Jump if the previous condition is met.
-		emit(Machine.JUMPIFop, 1, Machine.SBr, loopAddr);
+		emit(Machine.JUMPIFop, extraSize, Machine.CBr, loopAddr);
 
-		// Pop the space for the halting and initial expressions
-		emit(Machine.POPop, 0, 0, minIdxAddr + maxIdxAddr);
+		// Pop the array and extra variables out of the stack.
+		emit(Machine.POPop, 0, 0, ctrlVarAddr+1);
 
 		return null;
 	}
 
 	// </editor-fold>
+	
 	//<editor-fold defaultstate="collapsed" desc="Expressions">
 	public Object visitArrayExpression(ArrayExpression ast, Object o) {
 		ast.type.visit(this, null);
@@ -485,6 +531,7 @@ public final class Encoder implements Visitor {
 	}
 
 	// </editor-fold>
+
 	// <editor-fold defaultstate="collapsed" desc="Declarations">
 	public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast,
 			Object o) {
@@ -638,7 +685,12 @@ public final class Encoder implements Visitor {
 	}
 
 	public Object visitInVarDecl(InVarDecl ast, Object obj) {
-		return null;
+		Frame frame = (Frame) obj;
+
+		int valSize = ((Integer) ast.E.visit(this, frame)).intValue();
+
+		writeTableDetails(ast);
+		return valSize;
 	}
 
 	public Object visitVarExpDeclaration(VarExpDeclaration ast, Object o) {
@@ -686,6 +738,7 @@ public final class Encoder implements Visitor {
 	}
 
 	// </editor-fold>
+
 	// <editor-fold defaultstate="collapsed" desc="Aggregates">
 	// Array Aggregates
 	public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast,
@@ -942,6 +995,7 @@ public final class Encoder implements Visitor {
 	}
 
 	// </editor-fold>
+
 	// <editor-fold defaultstate="collapsed" desc=" Literals, Identifiers and Operators ">
 	// Literals, Identifiers and Operators
 	public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
@@ -1006,6 +1060,7 @@ public final class Encoder implements Visitor {
 	}
 
 	// </editor-fold>
+
 	// <editor-fold defaultstate="collapsed" desc=" Value-or-variable names ">
 	// Value-or-variable names
 	public Object visitDotVname(DotVname ast, Object o) {
@@ -1064,6 +1119,7 @@ public final class Encoder implements Visitor {
 	}
 
 	// </editor-fold>
+
 	// <editor-fold defaultstate="collapsed" desc=" Programs, env, and more ">
 	// Programs
 	public Object visitProgram(Program ast, Object o) {
@@ -1414,3 +1470,4 @@ public final class Encoder implements Visitor {
 }
 
 	// </editor-fold>
+

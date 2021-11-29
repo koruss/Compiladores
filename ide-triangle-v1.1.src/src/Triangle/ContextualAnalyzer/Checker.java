@@ -1007,7 +1007,10 @@ public final class Checker implements Visitor {
 			ast.variable = true;
 		} else if (binding instanceof InVarDecl) {
 			ast.type = ((InVarDecl) binding).E.type;
-			ast.variable = true;
+			ast.type = ((ArrayTypeDenoter) ast.type).T; 
+			// Decorate the InVarDecl with the array's type.
+			((InVarDecl) binding).addTypeDenoter(ast.type);
+			ast.variable = false;
 		}else if (binding instanceof RangeVarDecl) {
 			ast.type = ((RangeVarDecl) binding).E.type;
 			ast.variable = false;

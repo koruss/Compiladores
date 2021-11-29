@@ -15,11 +15,17 @@ public class InVarDecl extends Declaration{
 
 	public Identifier I;
 	public Expression E;
+	public TypeDenoter T;
 
 	public InVarDecl(Identifier _ident, Expression _exp, SourcePosition thisPosition) {
 		super(thisPosition);
 		I = _ident;
 		E = _exp;
+		T = null;
+	}
+
+	public void addTypeDenoter(TypeDenoter eType){
+		this.T = eType;	
 	}
 
 	public Object visit(Visitor v, Object o) {
